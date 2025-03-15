@@ -12,6 +12,8 @@ import {
 } from "@mui/material";
 import axios from "axios";
 
+const API_URL = "http://localhost:5001"; // Match your backend port
+
 const Register = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -27,6 +29,7 @@ const Register = () => {
     country: "",
   });
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -39,6 +42,9 @@ const Register = () => {
       return;
     }
 
+    setLoading(true);
+    setError("");
+
     try {
       const {
         confirmPassword,
@@ -50,14 +56,36 @@ const Register = () => {
         ...userData
       } = formData;
       const address = { street, city, state, zipCode, country };
-      const res = await axios.post("/api/auth/register", {
+
+      // Use the correct API URL
+      const res = await axios.post(`${API_URL}/api/auth/register`, {
         ...userData,
         address,
       });
+
+      // Store token and user data
       localStorage.setItem("token", res.data.token);
+      localStorage.setItem("user", JSON.stringify(res.data.user));
+
+      // Set authorization header for future requests
+      axios.defaults.headers.common[
+        "Authorization"
+      ] = `Bearer ${res.data.token}`;
+
+      // Show success message and redirect
       navigate("/");
     } catch (err) {
-      setError(err.response?.data?.message || "An error occurred");
+      if (!err.response) {
+        setError("Network error. Please check your connection.");
+      } else if (err.response.status === 400) {
+        setError(
+          err.response.data.message || "Registration failed. Please try again."
+        );
+      } else {
+        setError("An error occurred during registration. Please try again.");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -184,6 +212,7 @@ const Register = () => {
               variant="contained"
               color="primary"
               sx={{ mt: 3, mb: 2 }}
+              disabled={loading}
             >
               Register
             </Button>

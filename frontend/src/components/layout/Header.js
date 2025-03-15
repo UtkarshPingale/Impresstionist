@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 import {
   AppBar,
   Toolbar,
@@ -16,15 +16,15 @@ import {
   ListItemText,
   useTheme,
   useMediaQuery,
-} from '@mui/material';
+} from "@mui/material";
 import {
   Menu as MenuIcon,
   ShoppingCart,
   Person,
   ExitToApp,
   Dashboard,
-} from '@mui/icons-material';
-import { useAuth } from '../../contexts/AuthContext';
+} from "@mui/icons-material";
+import { useAuth } from "../../contexts/AuthContext";
 
 const Header = () => {
   const [anchorEl, setAnchorEl] = useState(null);
@@ -32,7 +32,7 @@ const Header = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
@@ -45,9 +45,9 @@ const Header = () => {
   const handleLogout = async () => {
     try {
       await logout();
-      navigate('/login');
+      navigate("/login");
     } catch (error) {
-      console.error('Failed to log out:', error);
+      console.error("Failed to log out:", error);
     }
     handleClose();
   };
@@ -57,15 +57,15 @@ const Header = () => {
   };
 
   const menuItems = [
-    { text: 'Home', path: '/' },
-    { text: 'Gallery', path: '/gallery' },
-    { text: 'Exhibitions', path: '/exhibitions' },
-    { text: 'Awards', path: '/awards' },
-    { text: 'Patron', path: '/patron' },
-    { text: 'About', path: '/about' },
-    { text: 'Press', path: '/press' },
-    { text: 'Testimonials', path: '/testimonials' },
-    { text: 'Contact', path: '/contact' },
+    { text: "Home", path: "/" },
+    { text: "Gallery", path: "/gallery" },
+    { text: "Exhibitions", path: "/exhibitions" },
+    { text: "Awards", path: "/awards" },
+    { text: "Patron", path: "/patron" },
+    { text: "About", path: "/about" },
+    { text: "Press", path: "/press" },
+    { text: "Testimonials", path: "/testimonials" },
+    { text: "Contact", path: "/contact" },
   ];
 
   const drawer = (
@@ -103,16 +103,16 @@ const Header = () => {
           to="/"
           sx={{
             flexGrow: 1,
-            textDecoration: 'none',
-            color: 'inherit',
-            fontWeight: 'bold',
+            textDecoration: "none",
+            color: "inherit",
+            fontWeight: "bold",
           }}
         >
           Impress
         </Typography>
 
         {!isMobile && (
-          <Box sx={{ display: 'flex', gap: 2 }}>
+          <Box sx={{ display: "flex", gap: 2 }}>
             {menuItems.map((item) => (
               <Button
                 key={item.text}
@@ -126,7 +126,7 @@ const Header = () => {
           </Box>
         )}
 
-        <Box sx={{ display: 'flex', alignItems: 'center', ml: 2 }}>
+        <Box sx={{ display: "flex", alignItems: "center" }}>
           <IconButton
             color="inherit"
             component={RouterLink}
@@ -140,19 +140,20 @@ const Header = () => {
 
           {user ? (
             <>
-              <IconButton
-                color="inherit"
-                onClick={handleMenu}
-                sx={{ ml: 1 }}
-              >
-                <Person />
-              </IconButton>
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                <Typography variant="body1" sx={{ mr: 1 }}>
+                  {user.name}
+                </Typography>
+                <IconButton color="inherit" onClick={handleMenu}>
+                  <Person />
+                </IconButton>
+              </Box>
               <Menu
                 anchorEl={anchorEl}
                 open={Boolean(anchorEl)}
                 onClose={handleClose}
               >
-                {user.role === 'admin' && (
+                {user.role === "admin" && (
                   <MenuItem
                     component={RouterLink}
                     to="/admin"
@@ -196,4 +197,4 @@ const Header = () => {
   );
 };
 
-export default Header; 
+export default Header;

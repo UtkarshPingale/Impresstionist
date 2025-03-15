@@ -10,7 +10,14 @@ const auth = require("../middleware/auth");
 // @access  Public
 router.post("/register", async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, phone, address } = req.body;
+
+    // Input validation
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        message: "Please provide name, email and password",
+      });
+    }
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -25,6 +32,10 @@ router.post("/register", async (req, res) => {
       name,
       email,
       password,
+      phone,
+      address,
+      status: "active", // Set default status
+      role: "user", // Set default role
     });
 
     await user.save();
@@ -34,6 +45,7 @@ router.post("/register", async (req, res) => {
       expiresIn: "24h",
     });
 
+    // Return consistent user data structure
     res.status(201).json({
       message: "User registered successfully",
       token,
@@ -41,15 +53,21 @@ router.post("/register", async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
+        role: user.role,
+        status: user.status,
+        phone: user.phone,
+        address: user.address,
       },
     });
   } catch (error) {
+    console.error("Registration error:", error);
     if (error.code === 11000) {
       return res.status(400).json({ message: "Email already exists" });
     }
-    res
-      .status(500)
-      .json({ message: "Error registering user", error: error.message });
+    res.status(500).json({
+      message: "Error registering user",
+      error: error.message,
+    });
   }
 });
 
@@ -59,35 +77,87 @@ router.post("/register", async (req, res) => {
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
+    console.log("\n=== Login Attempt ===");
+    console.log("Email:", email);
+    console.log("Password provided:", !!password);
 
-    // Find user
-    const user = await User.findOne({ email });
+    // Basic validation
+    if (!email || !password) {
+      console.log("Missing credentials");
+      return res.status(400).json({
+        message: "Please provide both email and password",
+      });
+    }
+
+    // Find user with password included
+    console.log("\n=== User Lookup ===");
+    const user = await User.findOne({ email }).select("+password");
+    console.log("User found:", !!user);
+
     if (!user) {
-      return res.status(401).json({ message: "Invalid email or password" });
+      console.log("No user found with email:", email);
+      return res.status(401).json({
+        message: "Invalid email or password",
+      });
     }
 
-    // Check password
-    const isMatch = await user.comparePassword(password);
+    console.log("\n=== Password Check ===");
+    console.log("User has password:", !!user.password);
+    console.log("Stored password length:", user.password?.length);
+    console.log("Input password length:", password.length);
+
+    // Direct password comparison
+    const isMatch = await bcrypt.compare(password, user.password);
+    console.log("Password match result:", isMatch);
+
     if (!isMatch) {
-      return res.status(401).json({ message: "Invalid email or password" });
+      console.log("Password verification failed");
+      return res.status(401).json({
+        message: "Invalid email or password",
+      });
     }
 
-    // Generate JWT token
+    console.log("\n=== Token Generation ===");
+    // Create token
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
       expiresIn: "24h",
     });
+    console.log("Token generated successfully");
 
-    res.json({
-      message: "Login successful",
+    // Create safe user object
+    const userResponse = {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      status: user.status,
+    };
+
+    console.log("\n=== Login Success ===");
+    console.log("User:", userResponse.email);
+
+    return res.json({
+      success: true,
       token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-      },
+      user: userResponse,
     });
   } catch (error) {
-    res.status(500).json({ message: "Error logging in", error: error.message });
+    console.error("\n=== Login Error ===");
+    console.error("Type:", error.name);
+    console.error("Message:", error.message);
+    console.error("Stack:", error.stack);
+
+    // Check for specific error types
+    if (error.name === "MongoError" || error.name === "MongoServerError") {
+      console.error("Database connection error");
+      return res.status(500).json({
+        message: "Database error occurred",
+      });
+    }
+
+    return res.status(500).json({
+      message: "Login failed. Please try again.",
+    });
   }
 });
 

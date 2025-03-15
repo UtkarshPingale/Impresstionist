@@ -29,20 +29,36 @@ const UserSchema = new mongoose.Schema(
       enum: ["user", "admin"],
       default: "user",
     },
-    address: {
-      street: String,
-      city: String,
-      state: String,
-      zipCode: String,
-      country: String,
-    },
-    phone: {
-      type: String,
-    },
     status: {
       type: String,
       enum: ["active", "inactive"],
       default: "active",
+    },
+    phone: {
+      type: String,
+      trim: true,
+    },
+    address: {
+      street: {
+        type: String,
+        trim: true,
+      },
+      city: {
+        type: String,
+        trim: true,
+      },
+      state: {
+        type: String,
+        trim: true,
+      },
+      zipCode: {
+        type: String,
+        trim: true,
+      },
+      country: {
+        type: String,
+        trim: true,
+      },
     },
     createdAt: {
       type: Date,
@@ -56,20 +72,55 @@ const UserSchema = new mongoose.Schema(
 
 // Hash password before saving
 UserSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
+  console.log("\n=== Password Hashing ===");
+
+  // Only hash if password is modified
+  if (!this.isModified("password")) {
+    console.log("Password not modified, skipping hash");
+    return next();
+  }
 
   try {
+    console.log("Generating salt...");
     const salt = await bcrypt.genSalt(10);
+
+    console.log("Hashing password...");
+    console.log("Original password length:", this.password.length);
+
     this.password = await bcrypt.hash(this.password, salt);
+
+    console.log("Password hashed successfully");
+    console.log("Hashed password length:", this.password.length);
+
     next();
   } catch (error) {
+    console.error("Error in password hashing:", error);
     next(error);
   }
 });
 
 // Method to compare password
 UserSchema.methods.comparePassword = async function (candidatePassword) {
-  return bcrypt.compare(candidatePassword, this.password);
+  try {
+    if (!this.password) {
+      console.log("No password available on the current document");
+      const user = await this.model("User")
+        .findOne({ _id: this._id })
+        .select("+password");
+
+      if (!user || !user.password) {
+        console.log("No user or password found");
+        return false;
+      }
+
+      return bcrypt.compare(candidatePassword, user.password);
+    }
+
+    return bcrypt.compare(candidatePassword, this.password);
+  } catch (error) {
+    console.error("Error comparing password:", error);
+    throw error;
+  }
 };
 
 module.exports = mongoose.model("User", UserSchema);
