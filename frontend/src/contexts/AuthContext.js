@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
 
+const API_URL = "http://localhost:5001";
+
 const AuthContext = createContext(null);
 
 export const useAuth = () => {
@@ -24,50 +26,93 @@ export const AuthProvider = ({ children }) => {
       const token = localStorage.getItem("token");
       if (token) {
         axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-        const response = await axios.get("/api/auth/me");
-        setUser(response.data);
+        const response = await axios.get(`${API_URL}/api/auth/user`);
+        if (response.data.success) {
+          setUser(response.data.user);
+        } else {
+          // If the token is invalid, clear everything
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          delete axios.defaults.headers.common["Authorization"];
+          setUser(null);
+        }
       }
     } catch (error) {
+      console.error("Auth check error:", error);
       localStorage.removeItem("token");
+      localStorage.removeItem("user");
       delete axios.defaults.headers.common["Authorization"];
+      setUser(null);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const login = async (email, password) => {
-    const response = await axios.post("/api/auth/login", { email, password });
-    const { token, user: userData } = response.data;
-    localStorage.setItem("token", token);
-    axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-    setUser(userData);
-    return userData;
+    try {
+      const response = await axios.post(`${API_URL}/api/auth/login`, {
+        email,
+        password,
+      });
+
+      if (response.data.success) {
+        const { token, user: userData } = response.data;
+        localStorage.setItem("token", token);
+        localStorage.setItem("user", JSON.stringify(userData));
+        axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+        setUser(userData);
+        return userData;
+      } else {
+        throw new Error(response.data.message || "Login failed");
+      }
+    } catch (error) {
+      console.error("Login error in context:", error);
+      throw error;
+    }
   };
 
   const register = async (userData) => {
-    const response = await axios.post("/api/auth/register", userData);
-    const { token, user: newUser } = response.data;
-    localStorage.setItem("token", token);
-    axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-    setUser(newUser);
-    return newUser;
+    try {
+      const response = await axios.post(
+        `${API_URL}/api/auth/register`,
+        userData
+      );
+
+      if (response.data.success) {
+        const { token, user: newUser } = response.data;
+        localStorage.setItem("token", token);
+        localStorage.setItem("user", JSON.stringify(newUser));
+        axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+        setUser(newUser);
+        return newUser;
+      } else {
+        throw new Error(response.data.message || "Registration failed");
+      }
+    } catch (error) {
+      console.error("Registration error:", error);
+      throw error;
+    }
   };
 
   const logout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
     delete axios.defaults.headers.common["Authorization"];
     setUser(null);
   };
 
   const updateProfile = async (userData) => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await axios.put("/api/auth/profile", userData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setUser(response.data);
-      return response.data;
+      const response = await axios.put(`${API_URL}/api/auth/profile`, userData);
+      if (response.data.success) {
+        setUser(response.data.user);
+        return response.data.user;
+      } else {
+        throw new Error(response.data.message || "Profile update failed");
+      }
     } catch (error) {
-      throw error.response?.data?.message || "Profile update failed";
+      console.error("Profile update error:", error);
+      throw error;
     }
   };
 

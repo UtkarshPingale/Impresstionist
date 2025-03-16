@@ -4,6 +4,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const auth = require("../middleware/auth");
+const mongoose = require("mongoose");
 
 // @route   POST api/auth/register
 // @desc    Register a user
@@ -15,38 +16,56 @@ router.post("/register", async (req, res) => {
     // Input validation
     if (!name || !email || !password) {
       return res.status(400).json({
+        success: false,
         message: "Please provide name, email and password",
       });
     }
 
+    // Validate email format
+    const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide a valid email address",
+      });
+    }
+
+    // Validate password strength
+    if (password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: "Password must be at least 6 characters long",
+      });
+    }
+
     // Check if user already exists
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email: email.toLowerCase() });
     if (existingUser) {
-      return res
-        .status(400)
-        .json({ message: "User with this email already exists" });
+      return res.status(400).json({
+        success: false,
+        message: "User with this email already exists",
+      });
     }
 
     // Create new user
     const user = new User({
       name,
-      email,
+      email: email.toLowerCase(),
       password,
       phone,
       address,
-      status: "active", // Set default status
-      role: "user", // Set default role
+      status: "active",
+      role: "user",
     });
 
     await user.save();
 
     // Generate JWT token
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "24h",
-    });
+    const token = user.getSignedJwtToken();
 
-    // Return consistent user data structure
+    // Return success response
     res.status(201).json({
+      success: true,
       message: "User registered successfully",
       token,
       user: {
@@ -62,9 +81,13 @@ router.post("/register", async (req, res) => {
   } catch (error) {
     console.error("Registration error:", error);
     if (error.code === 11000) {
-      return res.status(400).json({ message: "Email already exists" });
+      return res.status(400).json({
+        success: false,
+        message: "Email already exists",
+      });
     }
     res.status(500).json({
+      success: false,
       message: "Error registering user",
       error: error.message,
     });
@@ -77,52 +100,46 @@ router.post("/register", async (req, res) => {
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log("\n=== Login Attempt ===");
-    console.log("Email:", email);
-    console.log("Password provided:", !!password);
 
     // Basic validation
     if (!email || !password) {
-      console.log("Missing credentials");
       return res.status(400).json({
+        success: false,
         message: "Please provide both email and password",
       });
     }
 
-    // Find user with password included
-    console.log("\n=== User Lookup ===");
-    const user = await User.findOne({ email }).select("+password");
-    console.log("User found:", !!user);
+    // Find user and explicitly select password
+    const user = await User.findOne({ email: email.toLowerCase() }).select(
+      "+password"
+    );
 
     if (!user) {
-      console.log("No user found with email:", email);
       return res.status(401).json({
+        success: false,
         message: "Invalid email or password",
       });
     }
 
-    console.log("\n=== Password Check ===");
-    console.log("User has password:", !!user.password);
-    console.log("Stored password length:", user.password?.length);
-    console.log("Input password length:", password.length);
-
-    // Direct password comparison
-    const isMatch = await bcrypt.compare(password, user.password);
-    console.log("Password match result:", isMatch);
-
+    // Verify password
+    const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-      console.log("Password verification failed");
       return res.status(401).json({
+        success: false,
         message: "Invalid email or password",
       });
     }
 
-    console.log("\n=== Token Generation ===");
-    // Create token
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "24h",
-    });
-    console.log("Token generated successfully");
+    // Check if user is active
+    if (user.status !== "active") {
+      return res.status(401).json({
+        success: false,
+        message: "Your account is not active. Please contact support.",
+      });
+    }
+
+    // Generate JWT token
+    const token = user.getSignedJwtToken();
 
     // Create safe user object
     const userResponse = {
@@ -131,31 +148,20 @@ router.post("/login", async (req, res) => {
       email: user.email,
       role: user.role,
       status: user.status,
+      phone: user.phone,
+      address: user.address,
     };
 
-    console.log("\n=== Login Success ===");
-    console.log("User:", userResponse.email);
-
+    // Return success response
     return res.json({
       success: true,
       token,
       user: userResponse,
     });
   } catch (error) {
-    console.error("\n=== Login Error ===");
-    console.error("Type:", error.name);
-    console.error("Message:", error.message);
-    console.error("Stack:", error.stack);
-
-    // Check for specific error types
-    if (error.name === "MongoError" || error.name === "MongoServerError") {
-      console.error("Database connection error");
-      return res.status(500).json({
-        message: "Database error occurred",
-      });
-    }
-
+    console.error("Login error:", error);
     return res.status(500).json({
+      success: false,
       message: "Login failed. Please try again.",
     });
   }
@@ -166,11 +172,85 @@ router.post("/login", async (req, res) => {
 // @access  Private
 router.get("/user", auth, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select("-password");
-    res.json(user);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Server error");
+    const user = await User.findById(req.user.userId).select("-password");
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+    res.json({
+      success: true,
+      user,
+    });
+  } catch (error) {
+    console.error("Error fetching user:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching user data",
+    });
+  }
+});
+
+// @route   GET api/auth/test-db
+// @desc    Test database connection and user collection
+// @access  Public
+router.get("/test-db", async (req, res) => {
+  try {
+    console.log("\n=== Database Connection Test ===");
+
+    // Check database connection
+    const dbState = mongoose.connection.readyState;
+    console.log("Database connection state:", dbState);
+    console.log(
+      "Connection status:",
+      dbState === 0
+        ? "Disconnected"
+        : dbState === 1
+        ? "Connected"
+        : dbState === 2
+        ? "Connecting"
+        : dbState === 3
+        ? "Disconnecting"
+        : "Unknown"
+    );
+
+    // Test database operations
+    console.log("\n=== Collection Test ===");
+    const collections = await mongoose.connection.db
+      .listCollections()
+      .toArray();
+    console.log(
+      "Available collections:",
+      collections.map((c) => c.name)
+    );
+
+    // Count users
+    const userCount = await User.countDocuments();
+    console.log("Total users in database:", userCount);
+
+    // Get a sample of users
+    const users = await User.find({}).limit(5).select("email name");
+    console.log("\nSample users:");
+    users.forEach((user) => {
+      console.log(`- ${user.email} (${user.name})`);
+    });
+
+    return res.json({
+      connection: {
+        state: dbState,
+        status: dbState === 1 ? "Connected" : "Not Connected",
+      },
+      collections: collections.map((c) => c.name),
+      userCount,
+      sampleUsers: users.map((u) => ({ email: u.email, name: u.name })),
+    });
+  } catch (error) {
+    console.error("Database test error:", error);
+    return res.status(500).json({
+      error: "Database test failed",
+      details: error.message,
+    });
   }
 });
 

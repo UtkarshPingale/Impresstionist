@@ -10,52 +10,58 @@ import {
   Alert,
   CircularProgress,
 } from "@mui/material";
-import axios from "axios";
-
-const API_URL = "http://localhost:5001"; // Match your backend port
+import { useAuth } from "../contexts/AuthContext";
 
 const Login = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-
-  const { email, password } = formData;
+  const [countdown, setCountdown] = useState(null);
 
   const handleChange = (e) => {
-    setError(""); // Clear any previous errors
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError("");
+    setLoading(true);
 
     try {
-      const res = await axios.post(`${API_URL}/api/auth/login`, formData);
-
-      // Store token and user data
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
-
-      // Set authorization header for future requests
-      axios.defaults.headers.common[
-        "Authorization"
-      ] = `Bearer ${res.data.token}`;
-
+      await login(formData.email, formData.password);
       navigate("/");
-    } catch (err) {
-      if (!err.response) {
-        setError("Network error. Please check your connection.");
-      } else if (err.response.status === 401) {
-        setError("Invalid email or password");
+    } catch (error) {
+      console.error("Login error:", error);
+      if (error.response?.status === 404) {
+        setError("Account not found. Redirecting to registration...");
+        let count = 5;
+        setCountdown(count);
+        const timer = setInterval(() => {
+          count--;
+          setCountdown(count);
+          if (count === 0) {
+            clearInterval(timer);
+            navigate("/register", {
+              state: {
+                email: formData.email,
+                message: "Please create an account to continue.",
+              },
+            });
+          }
+        }, 1000);
       } else {
         setError(
-          err.response?.data?.message || "An error occurred during login"
+          error.response?.data?.message ||
+            error.message ||
+            "Invalid credentials. Please try again."
         );
       }
     } finally {
@@ -71,8 +77,17 @@ const Login = () => {
             Login
           </Typography>
           {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
+            <Alert
+              severity={countdown !== null ? "info" : "error"}
+              sx={{ mb: 2 }}
+              onClose={() => setError("")}
+            >
               {error}
+              {countdown !== null && (
+                <Typography component="div" sx={{ mt: 1 }}>
+                  Redirecting to registration page in {countdown} seconds...
+                </Typography>
+              )}
             </Alert>
           )}
           <form onSubmit={handleSubmit}>
@@ -81,24 +96,26 @@ const Login = () => {
               label="Email"
               name="email"
               type="email"
-              value={email}
+              value={formData.email}
               onChange={handleChange}
               margin="normal"
               required
               disabled={loading}
               error={!!error}
+              autoComplete="email"
             />
             <TextField
               fullWidth
               label="Password"
               name="password"
               type="password"
-              value={password}
+              value={formData.password}
               onChange={handleChange}
               margin="normal"
               required
               disabled={loading}
               error={!!error}
+              autoComplete="current-password"
             />
             <Button
               type="submit"

@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 const UserSchema = new mongoose.Schema(
   {
@@ -23,6 +24,7 @@ const UserSchema = new mongoose.Schema(
       type: String,
       required: [true, "Password is required"],
       minlength: [6, "Password must be at least 6 characters long"],
+      select: false, // Don't return password by default
     },
     role: {
       type: String,
@@ -39,26 +41,11 @@ const UserSchema = new mongoose.Schema(
       trim: true,
     },
     address: {
-      street: {
-        type: String,
-        trim: true,
-      },
-      city: {
-        type: String,
-        trim: true,
-      },
-      state: {
-        type: String,
-        trim: true,
-      },
-      zipCode: {
-        type: String,
-        trim: true,
-      },
-      country: {
-        type: String,
-        trim: true,
-      },
+      street: String,
+      city: String,
+      state: String,
+      zipCode: String,
+      country: String,
     },
     createdAt: {
       type: Date,
@@ -72,29 +59,15 @@ const UserSchema = new mongoose.Schema(
 
 // Hash password before saving
 UserSchema.pre("save", async function (next) {
-  console.log("\n=== Password Hashing ===");
-
-  // Only hash if password is modified
   if (!this.isModified("password")) {
-    console.log("Password not modified, skipping hash");
     return next();
   }
 
   try {
-    console.log("Generating salt...");
     const salt = await bcrypt.genSalt(10);
-
-    console.log("Hashing password...");
-    console.log("Original password length:", this.password.length);
-
     this.password = await bcrypt.hash(this.password, salt);
-
-    console.log("Password hashed successfully");
-    console.log("Hashed password length:", this.password.length);
-
     next();
   } catch (error) {
-    console.error("Error in password hashing:", error);
     next(error);
   }
 });
@@ -102,25 +75,24 @@ UserSchema.pre("save", async function (next) {
 // Method to compare password
 UserSchema.methods.comparePassword = async function (candidatePassword) {
   try {
-    if (!this.password) {
-      console.log("No password available on the current document");
-      const user = await this.model("User")
-        .findOne({ _id: this._id })
-        .select("+password");
-
-      if (!user || !user.password) {
-        console.log("No user or password found");
-        return false;
-      }
-
-      return bcrypt.compare(candidatePassword, user.password);
+    // Since password is not selected by default, we need to get it explicitly
+    const user = await this.model("User")
+      .findById(this._id)
+      .select("+password");
+    if (!user || !user.password) {
+      return false;
     }
-
-    return bcrypt.compare(candidatePassword, this.password);
+    return await bcrypt.compare(candidatePassword, user.password);
   } catch (error) {
-    console.error("Error comparing password:", error);
     throw error;
   }
+};
+
+// Method to get JWT token
+UserSchema.methods.getSignedJwtToken = function () {
+  return jwt.sign({ userId: this._id }, process.env.JWT_SECRET, {
+    expiresIn: "24h",
+  });
 };
 
 module.exports = mongoose.model("User", UserSchema);
