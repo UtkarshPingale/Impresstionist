@@ -14,14 +14,13 @@ import { useAuth } from "../contexts/AuthContext";
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, setUser } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [countdown, setCountdown] = useState(null);
 
   const handleChange = (e) => {
     setFormData({
@@ -36,34 +35,33 @@ const Login = () => {
     setLoading(true);
 
     try {
+      // Check for admin credentials
+      if (formData.email === "admin" && formData.password === "admin") {
+        // Set admin user data
+        const adminUser = {
+          name: "Administrator",
+          email: "admin",
+          role: "admin",
+        };
+        // Update the auth context
+        setUser(adminUser);
+        // Store in localStorage
+        localStorage.setItem("user", JSON.stringify(adminUser));
+        localStorage.setItem("token", "admin-token");
+        navigate("/");
+        return;
+      }
+
+      // Regular user login
       await login(formData.email, formData.password);
       navigate("/");
     } catch (error) {
       console.error("Login error:", error);
-      if (error.response?.status === 404) {
-        setError("Account not found. Redirecting to registration...");
-        let count = 5;
-        setCountdown(count);
-        const timer = setInterval(() => {
-          count--;
-          setCountdown(count);
-          if (count === 0) {
-            clearInterval(timer);
-            navigate("/register", {
-              state: {
-                email: formData.email,
-                message: "Please create an account to continue.",
-              },
-            });
-          }
-        }, 1000);
-      } else {
-        setError(
-          error.response?.data?.message ||
-            error.message ||
-            "Invalid credentials. Please try again."
-        );
-      }
+      setError(
+        error.response?.data?.message ||
+          error.message ||
+          "Invalid credentials. Please try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -77,32 +75,21 @@ const Login = () => {
             Login
           </Typography>
           {error && (
-            <Alert
-              severity={countdown !== null ? "info" : "error"}
-              sx={{ mb: 2 }}
-              onClose={() => setError("")}
-            >
+            <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError("")}>
               {error}
-              {countdown !== null && (
-                <Typography component="div" sx={{ mt: 1 }}>
-                  Redirecting to registration page in {countdown} seconds...
-                </Typography>
-              )}
             </Alert>
           )}
           <form onSubmit={handleSubmit}>
             <TextField
               fullWidth
-              label="Email"
+              label="Username/Email"
               name="email"
-              type="email"
               value={formData.email}
               onChange={handleChange}
               margin="normal"
               required
               disabled={loading}
               error={!!error}
-              autoComplete="email"
             />
             <TextField
               fullWidth
@@ -115,7 +102,6 @@ const Login = () => {
               required
               disabled={loading}
               error={!!error}
-              autoComplete="current-password"
             />
             <Button
               type="submit"
