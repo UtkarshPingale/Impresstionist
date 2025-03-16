@@ -35,18 +35,39 @@ const theme = createTheme({
     },
   },
   typography: {
-    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    fontFamily: '"Times New Roman", serif',
     h1: {
       fontSize: "2.5rem",
       fontWeight: 500,
+      fontFamily: '"Times New Roman", serif',
     },
     h2: {
       fontSize: "2rem",
       fontWeight: 500,
+      fontFamily: '"Times New Roman", serif',
     },
     h3: {
       fontSize: "1.75rem",
       fontWeight: 500,
+      fontFamily: '"Times New Roman", serif',
+    },
+    h4: {
+      fontFamily: '"Times New Roman", serif',
+    },
+    h5: {
+      fontFamily: '"Times New Roman", serif',
+    },
+    h6: {
+      fontFamily: '"Times New Roman", serif',
+    },
+    body1: {
+      fontFamily: '"Times New Roman", serif',
+    },
+    body2: {
+      fontFamily: '"Times New Roman", serif',
+    },
+    button: {
+      fontFamily: '"Times New Roman", serif',
     },
   },
 });

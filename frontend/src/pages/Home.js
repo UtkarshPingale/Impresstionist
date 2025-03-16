@@ -5,32 +5,36 @@ import {
   Container,
   Grid,
   Typography,
-  Card,
-  CardContent,
-  CardMedia,
   Button,
-  Link,
   useTheme,
   useMediaQuery,
 } from "@mui/material";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import axios from "axios";
+import ImageSlider from "../components/ImageSlider";
 
 const Home = () => {
-  const [featuredArtworks, setFeaturedArtworks] = useState([]);
   const [currentExhibition, setCurrentExhibition] = useState(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
+  // Gallery images for the slider
+  const sliderImages = [
+    "/gallery-images/gallery1.jpg",
+    "/gallery-images/gallery2.jpg",
+    "/gallery-images/gallery3.jpg",
+    "/gallery-images/gallery4.png",
+    "/gallery-images/gallery5.png",
+    "/gallery-images/gallery6.png",
+    "/gallery-images/gallery7.png",
+    "/gallery-images/gallery8.png",
+  ];
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [artworksRes, exhibitionRes] = await Promise.all([
-          axios.get("/api/artworks/featured"),
-          axios.get("/api/exhibitions/current"),
-        ]);
-        setFeaturedArtworks(artworksRes.data);
+        const exhibitionRes = await axios.get("/api/exhibitions/current");
         setCurrentExhibition(exhibitionRes.data[0]);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -45,11 +49,24 @@ const Home = () => {
       {/* Hero Section */}
       <Box
         sx={{
-          height: { xs: "60vh", md: "80vh" },
+          height: { xs: "100vh", md: "100vh" },
           position: "relative",
           overflow: "hidden",
+          backgroundImage: "url('/banner-image-1.png')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
           bgcolor: "primary.main",
           color: "white",
+          "&::before": {
+            content: '""',
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 0,
+          },
         }}
       >
         <Container
@@ -68,78 +85,47 @@ const Home = () => {
             sx={{
               fontSize: { xs: "2.5rem", md: "4rem" },
               fontWeight: "bold",
+              color: "black",
               mb: 2,
+              ml: -15,
             }}
           >
-            Welcome to Impress
+            ABSTRACT
+            <br />
+            IMPERSSIONIST
+            <br />
+            ARTIST
           </Typography>
-          <Typography variant="h5" sx={{ mb: 4, maxWidth: "600px" }}>
-            Discover unique artworks and immerse yourself in contemporary art
-            exhibitions
-          </Typography>
-          <Button
-            component={RouterLink}
-            to="/gallery"
-            variant="contained"
-            color="secondary"
-            size="large"
-            sx={{ width: { xs: "100%", sm: "auto" } }}
+          <Typography
+            variant="h5"
+            sx={{ mb: 4, maxWidth: "600px", ml: -15, color: "black" }}
           >
-            Explore Gallery
-          </Button>
+            Art is a creative expression that communicates ideas and emotions
+            through various forms, such as painting and sculpture. Abstract Art
+            goes beyond realistic representation, using shapes, colors, and
+            lines to evoke emotions and invite personal interpretation.
+          </Typography>
         </Container>
       </Box>
 
-      {/* Featured Artworks Section */}
-      <Container maxWidth="lg" sx={{ py: 8 }}>
-        <Typography variant="h2" align="center" sx={{ mb: 6 }}>
-          Featured Artworks
-        </Typography>
-        <Grid container spacing={4}>
-          {featuredArtworks.map((artwork) => (
-            <Grid item xs={12} sm={6} md={4} key={artwork._id}>
-              <Card
-                sx={{
-                  height: "100%",
-                  display: "flex",
-                  flexDirection: "column",
-                  transition: "transform 0.2s",
-                  "&:hover": {
-                    transform: "translateY(-8px)",
-                  },
-                }}
-              >
-                <CardMedia
-                  component="img"
-                  height="300"
-                  image={artwork.images[0]?.url || "/placeholder.jpg"}
-                  alt={artwork.title}
-                />
-                <CardContent sx={{ flexGrow: 1 }}>
-                  <Typography gutterBottom variant="h5" component="h2">
-                    {artwork.title}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" paragraph>
-                    {artwork.description.substring(0, 100)}...
-                  </Typography>
-                  <Typography variant="h6" color="primary" gutterBottom>
-                    ${artwork.price.toLocaleString()}
-                  </Typography>
-                  <Button
-                    component={RouterLink}
-                    to={`/gallery/${artwork._id}`}
-                    variant="outlined"
-                    color="primary"
-                    fullWidth
-                  >
-                    View Details
-                  </Button>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      </Container>
+      {/* Image Slider Section */}
+      <Box sx={{ py: 8, bgcolor: "#f8f8f8" }}>
+        <Container maxWidth="lg">
+          <Typography
+            variant="h2"
+            align="center"
+            sx={{
+              mb: 6,
+              fontFamily: '"Times New Roman", serif',
+              fontWeight: "normal",
+              color: "#000000",
+            }}
+          >
+            Featured Works
+          </Typography>
+          <ImageSlider images={sliderImages} />
+        </Container>
+      </Box>
 
       {/* Current Exhibition Section */}
       {currentExhibition && (
@@ -195,8 +181,184 @@ const Home = () => {
         </Box>
       )}
 
+      {/* Studio & Details Section */}
+      <Box sx={{ py: 12, bgcolor: "#ffffff" }}>
+        <Container maxWidth="lg" sx={{ px: { xs: 2, md: 0 } }}>
+          <Box sx={{ mb: 8 }}>
+            <Typography
+              variant="h2"
+              sx={{
+                fontFamily: '"Times New Roman", serif',
+                fontWeight: "bold",
+                mb: 3,
+                fontSize: { xs: "2.5rem", md: "3.5rem" },
+              }}
+            >
+              Studio & Details
+            </Typography>
+            <Typography
+              variant="body1"
+              sx={{
+                color: "#666",
+                fontSize: "1.1rem",
+                lineHeight: 1.8,
+                maxWidth: "600px",
+              }}
+            >
+              More details about artist and total awards, press & media. Each
+              piece invites viewers to look deeper, sparking personal
+              interpretations and fresh perspectives on modern abstraction.
+            </Typography>
+          </Box>
+
+          <Box
+            sx={{
+              position: "relative",
+              width: "100%",
+              overflow: "hidden",
+              mx: "auto",
+              "&::before": {
+                content: '""',
+                position: "absolute",
+                left: "50%",
+                transform: "translateX(-50%)",
+                width: "2px",
+                height: "100%",
+                bgcolor: "#e0e0e0",
+                zIndex: 0,
+              },
+            }}
+          >
+            {[
+              {
+                icon: "🎨",
+                title: "Studio",
+                description:
+                  "A creative space where imagination meets canvas, bringing abstract visions to life.",
+              },
+              {
+                icon: "🏆",
+                title: "Awards",
+                description:
+                  "Recognition for innovative contributions to contemporary abstract art.",
+              },
+              {
+                icon: "👤",
+                title: "About Me",
+                description:
+                  "Dedicated artist with a passion for exploring new dimensions in abstract expression.",
+              },
+              {
+                icon: "📰",
+                title: "Press & Media",
+                description:
+                  "Featured in leading art publications and media coverage worldwide.",
+              },
+              {
+                icon: "🤝",
+                title: "Patron",
+                description:
+                  "Join our community of art enthusiasts and collectors supporting creative innovation.",
+              },
+              {
+                icon: "⭐",
+                title: "Testimonials",
+                description:
+                  "Hear from collectors and critics about their experience with our artwork.",
+              },
+            ].map((item, index) => (
+              <Box
+                key={index}
+                sx={{
+                  display: "flex",
+                  justifyContent: index % 2 === 0 ? "flex-end" : "flex-start",
+                  position: "relative",
+                  mb: -4,
+                  mt: index === 0 ? 0 : -2,
+                  zIndex: 6 - index,
+                  width: "100%",
+                  "&::before": {
+                    content: '""',
+                    position: "absolute",
+                    top: "50%",
+                    [index % 2 === 0 ? "left" : "right"]: "calc(50% - 1px)",
+                    width: "40px",
+                    height: "2px",
+                    bgcolor: "#e0e0e0",
+                    transform: "translateY(-50%)",
+                  },
+                }}
+              >
+                <Box
+                  sx={{
+                    width: { xs: "90%", sm: "45%", md: "40%" },
+                    display: "flex",
+                    alignItems: "center",
+                    p: 2.5,
+                    bgcolor: "#f8f8f8",
+                    borderRadius: 2,
+                    transition: "all 0.3s ease",
+                    cursor: "pointer",
+                    flexDirection: index % 2 === 0 ? "row" : "row-reverse",
+                    "&:hover": {
+                      transform:
+                        index % 2 === 0
+                          ? "translateX(-12px)"
+                          : "translateX(12px)",
+                      boxShadow: "0 8px 24px rgba(0,0,0,0.1)",
+                      bgcolor: "#ffffff",
+                      zIndex: 10,
+                    },
+                  }}
+                >
+                  <Typography
+                    variant="h1"
+                    sx={{
+                      fontSize: "2.5rem",
+                      mx: 2,
+                      minWidth: "50px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    {item.icon}
+                  </Typography>
+                  <Box
+                    sx={{
+                      textAlign: index % 2 === 0 ? "right" : "left",
+                      flex: 1,
+                    }}
+                  >
+                    <Typography
+                      variant="h5"
+                      sx={{
+                        mb: 1,
+                        fontFamily: '"Times New Roman", serif',
+                        fontWeight: "bold",
+                      }}
+                    >
+                      {item.title}
+                    </Typography>
+                    <Typography
+                      variant="body1"
+                      sx={{
+                        color: "#666",
+                        lineHeight: 1.7,
+                      }}
+                    >
+                      {item.description}
+                    </Typography>
+                  </Box>
+                </Box>
+              </Box>
+            ))}
+          </Box>
+        </Container>
+      </Box>
+
       {/* AR Preview Section */}
-      <Container maxWidth="lg" sx={{ py: 8 }}>
+      <Container maxWidth="lg" sx={{ py: 8, bgcolor: "#f8f8f8" }}>
         <Typography variant="h2" align="center" sx={{ mb: 6 }}>
           Try AR Preview
         </Typography>
