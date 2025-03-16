@@ -113,18 +113,30 @@ const Home = () => {
         sx={{ py: 8, bgcolor: "#f8f8f8", width: "100%", overflow: "hidden" }}
       >
         <Container maxWidth="lg">
-          <Typography
-            variant="h2"
-            align="center"
-            sx={{
-              mb: 6,
-              fontFamily: '"Times New Roman", serif',
-              fontWeight: "normal",
-              color: "#000000",
-            }}
-          >
-            Featured Works
-          </Typography>
+        <Typography
+              variant="h2"
+              sx={{
+                fontFamily: '"Times New Roman", serif',
+                fontWeight: "bold",
+                mb: 3,
+                fontSize: { xs: "2.5rem", md: "3.5rem" },
+              }}
+            >
+              Featured Works
+            </Typography>
+            <Typography
+              variant="body1"
+              sx={{
+                color: "#666",
+                fontSize: "1.1rem",
+                lineHeight: 1.8,
+                maxWidth: "600px",
+              }}
+            > 
+              Explore a curated selection of the artist's most compelling pieces. Each work embodies a unique expression, 
+              blending creativity and emotion to inspire and captivate. Discover the essence of modern artistry through 
+              these exceptional creations.
+            </Typography>
           <ImageSlider images={sliderImages} />
         </Container>
       </Box>
@@ -279,8 +291,8 @@ const Home = () => {
                   display: "flex",
                   justifyContent: index % 2 === 0 ? "flex-end" : "flex-start",
                   position: "relative",
-                  mb: -4,
-                  mt: index === 0 ? 0 : -2,
+                  mb: 2,
+                  mt: index === 0 ? 0 : 2,
                   zIndex: 6 - index,
                   width: "100%",
                   "&::before": {
@@ -300,7 +312,8 @@ const Home = () => {
                     width: { xs: "90%", sm: "45%", md: "40%" },
                     display: "flex",
                     alignItems: "center",
-                    p: 2.5,
+                    p: 3.5,
+                    mb: 2,
                     bgcolor: "#f8f8f8",
                     borderRadius: 2,
                     transition: "all 0.3s ease",
@@ -368,9 +381,17 @@ const Home = () => {
         maxWidth="lg"
         sx={{ py: 8, bgcolor: "#f8f8f8", width: "100%", overflow: "hidden" }}
       >
-        <Typography variant="h2" align="center" sx={{ mb: 6 }}>
-          Try AR Preview
-        </Typography>
+        <Typography
+              variant="h2"
+              sx={{
+                fontFamily: '"Times New Roman", serif',
+                fontWeight: "bold",
+                mb: 3,
+                fontSize: { xs: "2.5rem", md: "3.5rem" },
+              }}
+            >
+              Try AR Preview
+            </Typography>
         <Box
           sx={{
             height: "400px",

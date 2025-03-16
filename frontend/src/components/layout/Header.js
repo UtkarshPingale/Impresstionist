@@ -65,7 +65,7 @@ const Header = () => {
     { text: "About", path: "/about" },
     { text: "Press", path: "/press" },
     { text: "Testimonials", path: "/testimonials" },
-    { text: "Contact", path: "/contact" },
+    { text: "Studio", path: "/studio" },
   ];
 
   const drawer = (
@@ -85,8 +85,30 @@ const Header = () => {
   );
 
   return (
-    <AppBar position="sticky">
-      <Toolbar>
+    <AppBar
+      position="sticky"
+      sx={{
+        bgcolor: "rgba(0, 0, 0, 0.4)",
+        backdropFilter: "blur(10px)",
+        WebkitBackdropFilter: "blur(10px)",
+        boxShadow:
+          "0 4px 20px rgba(0, 0, 0, 0.3), 0 6px 50px rgba(0, 0, 0, 0.1)",
+        borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
+        borderBottomLeftRadius: 10,
+        borderBottomRightRadius: 10,
+        "&::after": {
+          content: '""',
+          position: "absolute",
+          bottom: -1,
+          left: 0,
+          right: 0,
+          height: "1px",
+          background:
+            "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)",
+        },
+      }}
+    >
+      <Toolbar sx={{ justifyContent: "space-between" }}>
         {isMobile && (
           <IconButton
             color="inherit"
@@ -102,25 +124,103 @@ const Header = () => {
           component={RouterLink}
           to="/"
           sx={{
-            flexGrow: 1,
             textDecoration: "none",
             color: "inherit",
             fontWeight: "bold",
+            flexGrow: 0,
           }}
         >
-          Impress
+          Impresstionist
         </Typography>
 
         {!isMobile && (
-          <Box sx={{ display: "flex", gap: 2 }}>
+          <Box
+            sx={{
+              display: "flex",
+              gap: 2,
+              justifyContent: "center",
+              flexGrow: 1,
+              mx: 4,
+            }}
+          >
             {menuItems.map((item) => (
               <Button
                 key={item.text}
                 color="inherit"
                 component={RouterLink}
                 to={item.path}
+                sx={{
+                  textTransform: "none",
+                  fontSize: "1rem",
+                  position: "relative",
+                  padding: "6px 16px",
+                  transition: "all 0.3s ease",
+                  "&::before": {
+                    content: '""',
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: "rgba(255, 255, 255, 0.05)",
+                    backdropFilter: "blur(0px)",
+                    WebkitBackdropFilter: "blur(0px)",
+                    boxShadow: "0 0 15px 5px rgba(0, 0, 0, 0)",
+                    borderRadius: "4px",
+                    opacity: 0,
+                    transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                    transform: "scale(0.95)",
+                  },
+                  "&::after": {
+                    content: '""',
+                    position: "absolute",
+                    bottom: 0,
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    width: 0,
+                    height: "2px",
+                    background: "rgba(255, 255, 255, 0.7)",
+                    boxShadow: "0 0 8px rgba(255, 255, 255, 0.3)",
+                    transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                    filter: "blur(4px)",
+                  },
+                  "& span": {
+                    position: "relative",
+                    zIndex: 1,
+                    transition: "all 0.3s ease",
+                  },
+                  "&:hover": {
+                    color: "white",
+                    "&::before": {
+                      opacity: 1,
+                      transform: "scale(1)",
+                      backdropFilter: "blur(12px)",
+                      WebkitBackdropFilter: "blur(12px)",
+                      background: "rgba(255, 255, 255, 0.1)",
+                      boxShadow: "0 0 20px 5px rgba(255, 255, 255, 0.15)",
+                    },
+                    "&::after": {
+                      width: "80%",
+                      filter: "blur(2px)",
+                      boxShadow: "0 0 15px rgba(255, 255, 255, 0.5)",
+                    },
+                    "& span": {
+                      transform: "translateY(-1px)",
+                    },
+                  },
+                  "&.active": {
+                    "&::before": {
+                      opacity: 0.5,
+                    },
+                    "&::after": {
+                      width: "80%",
+                      filter: "blur(1px)",
+                      boxShadow: "0 0 12px rgba(255, 255, 255, 0.5)",
+                    },
+                  },
+                }}
               >
-                {item.text}
+                <span>{item.text}</span>
               </Button>
             ))}
           </Box>
