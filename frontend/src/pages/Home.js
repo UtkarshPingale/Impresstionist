@@ -109,7 +109,9 @@ const Home = () => {
       </Box>
 
       {/* Image Slider Section */}
-      <Box sx={{ py: 8, bgcolor: "#f8f8f8" }}>
+      <Box
+        sx={{ py: 8, bgcolor: "#f8f8f8", width: "100%", overflow: "hidden" }}
+      >
         <Container maxWidth="lg">
           <Typography
             variant="h2"
@@ -129,7 +131,9 @@ const Home = () => {
 
       {/* Current Exhibition Section */}
       {currentExhibition && (
-        <Box sx={{ bgcolor: "grey.100", py: 8 }}>
+        <Box
+          sx={{ bgcolor: "grey.100", py: 8, width: "100%", overflow: "hidden" }}
+        >
           <Container maxWidth="lg">
             <Grid container spacing={4} alignItems="center">
               <Grid item xs={12} md={6}>
@@ -182,7 +186,9 @@ const Home = () => {
       )}
 
       {/* Studio & Details Section */}
-      <Box sx={{ py: 12, bgcolor: "#ffffff" }}>
+      <Box
+        sx={{ py: 12, bgcolor: "#ffffff", width: "100%", overflow: "hidden" }}
+      >
         <Container maxWidth="lg" sx={{ px: { xs: 2, md: 0 } }}>
           <Box sx={{ mb: 8 }}>
             <Typography
@@ -282,7 +288,7 @@ const Home = () => {
                     position: "absolute",
                     top: "50%",
                     [index % 2 === 0 ? "left" : "right"]: "calc(50% - 1px)",
-                    width: "40px",
+                    width: "110px",
                     height: "2px",
                     bgcolor: "#e0e0e0",
                     transform: "translateY(-50%)",
@@ -358,7 +364,10 @@ const Home = () => {
       </Box>
 
       {/* AR Preview Section */}
-      <Container maxWidth="lg" sx={{ py: 8, bgcolor: "#f8f8f8" }}>
+      <Container
+        maxWidth="lg"
+        sx={{ py: 8, bgcolor: "#f8f8f8", width: "100%", overflow: "hidden" }}
+      >
         <Typography variant="h2" align="center" sx={{ mb: 6 }}>
           Try AR Preview
         </Typography>

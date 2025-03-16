@@ -32,9 +32,9 @@ const ImageSlider = ({ images }) => {
     <Box
       sx={{
         position: "relative",
-        width: "100vw",
-        marginLeft: "calc(-50vw + 50%)",
-        marginRight: "calc(-50vw + 50%)",
+        width: "100%",
+        maxWidth: "100%",
+        margin: 0,
         height: "auto",
         minHeight: "600px",
         bgcolor: "#f8f8f8",
