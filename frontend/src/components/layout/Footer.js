@@ -43,10 +43,11 @@ const Footer = () => {
     {
       title: "Legal",
       links: [
-        { text: "Privacy Policy", path: "/privacy" },
-        { text: "Terms of Service", path: "/terms" },
-        { text: "Shipping Policy", path: "/shipping" },
-        { text: "Returns Policy", path: "/returns" },
+        { text: "Privacy Policy", path: "/privacy-policy" },
+        { text: "Terms and Conditions of Service", path: "/terms" },
+        { text: "Ordering and Buying Policy", path: "/shipping" },
+        { text: "Authenticity Guarantee", path: "/authenticity" },
+        // { text: "Returns Policy", path: "/returns" },
       ],
     },
   ];
@@ -55,7 +56,10 @@ const Footer = () => {
     { icon: <Facebook />, url: "https://www.facebook.com/balasaheb.abhang/" },
     { icon: <Instagram />, url: "https://www.instagram.com/impressionist20/" },
     { icon: <Twitter />, url: "https://x.com/AbhangBalasahe2?s=08" },
-    { icon: <YouTube />, url: "https://www.youtube.com/channel/UCcYAVAlswXE6Bqw5abPi0YQ" },
+    {
+      icon: <YouTube />,
+      url: "https://www.youtube.com/channel/UCcYAVAlswXE6Bqw5abPi0YQ",
+    },
     { icon: <Pinterest />, url: "https://in.pinterest.com/impressionist14/" },
   ];
 

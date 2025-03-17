@@ -66,6 +66,7 @@ const Header = () => {
     { text: "Press", path: "/press" },
     { text: "Testimonials", path: "/testimonials" },
     { text: "Studio", path: "/studio" },
+    // ...(user?.role === "admin" ? [{ text: "Admin", path: "/admin" }] : []),
   ];
 
   const drawer = (
@@ -130,7 +131,7 @@ const Header = () => {
             flexGrow: 0,
           }}
         >
-          Impresstionist
+          Impressionist
         </Typography>
 
         {!isMobile && (

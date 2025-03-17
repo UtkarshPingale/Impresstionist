@@ -21,6 +21,10 @@ import AdminArtworks from "./pages/admin/Artworks";
 import AdminExhibitions from "./pages/admin/Exhibitions";
 import PrivateRoute from "./components/routing/PrivateRoute";
 import { AuthProvider } from "./contexts/AuthContext";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import Terms from "./pages/Terms";
+import Shipping from "./pages/Shipping";
+import AuthenticityGuarantee from "./pages/AuthenticityGuarantee";
 
 const theme = createTheme({
   palette: {
@@ -94,6 +98,13 @@ function App() {
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                <Route path="/terms" element={<Terms />} />
+                <Route path="/shipping" element={<Shipping />} />
+                <Route
+                  path="/authenticity"
+                  element={<AuthenticityGuarantee />}
+                />
                 <Route
                   path="/admin/*"
                   element={
