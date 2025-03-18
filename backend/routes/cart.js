@@ -4,142 +4,146 @@ const Cart = require("../models/Cart");
 const Artwork = require("../models/Artwork");
 const auth = require("../middleware/auth");
 
-// @route   GET api/cart
-// @desc    Get user's cart
-// @access  Private
+// Get cart
 router.get("/", auth, async (req, res) => {
   try {
-    let cart = await Cart.findOne({ user: req.user.id });
+    let cart = await Cart.findOne({ userId: req.user.userId });
+
     if (!cart) {
+      // Create a new cart for the user if it doesn't exist
       cart = new Cart({
-        user: req.user.id,
+        userId: req.user.userId,
         items: [],
+        total: 0,
       });
       await cart.save();
     }
-    res.json(cart);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Server error");
+
+    res.json({ success: true, cart });
+  } catch (error) {
+    console.error("Get cart error:", error);
+    res.status(500).json({ success: false, message: "Failed to get cart" });
   }
 });
 
-// @route   POST api/cart
-// @desc    Add item to cart
-// @access  Private
-router.post("/", auth, async (req, res) => {
+// Add to cart
+router.post("/add", auth, async (req, res) => {
   try {
-    const { artworkId, quantity } = req.body;
+    const { artworkId, quantity = 1 } = req.body;
 
-    // Check if artwork exists
     const artwork = await Artwork.findById(artworkId);
     if (!artwork) {
-      return res.status(404).json({ message: "Artwork not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Artwork not found" });
     }
 
-    // Get or create cart
-    let cart = await Cart.findOne({ user: req.user.id });
+    let cart = await Cart.findOne({ userId: req.user.userId });
     if (!cart) {
-      cart = new Cart({
-        user: req.user.id,
-        items: [],
-      });
+      cart = new Cart({ userId: req.user.userId, items: [] });
     }
 
-    // Check if item already exists in cart
-    const itemIndex = cart.items.findIndex(
-      (item) => item.artwork.toString() === artworkId
+    const existingItem = cart.items.find(
+      (item) => item.artworkId.toString() === artworkId
     );
-
-    if (itemIndex > -1) {
-      // Update quantity if item exists
-      cart.items[itemIndex].quantity += quantity;
+    if (existingItem) {
+      existingItem.quantity += quantity;
     } else {
-      // Add new item if it doesn't exist
       cart.items.push({
-        artwork: artworkId,
-        quantity,
+        artworkId: artwork._id,
+        title: artwork.title,
         price: artwork.price,
+        quantity,
+        imageUrl: artwork.images[0]?.url || "",
       });
     }
 
     await cart.save();
-    res.json(cart);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Server error");
+    res.json({ success: true, cart });
+  } catch (error) {
+    console.error("Add to cart error:", error);
+    res.status(500).json({ success: false, message: "Failed to add to cart" });
   }
 });
 
-// @route   PUT api/cart/:itemId
-// @desc    Update item quantity in cart
-// @access  Private
-router.put("/:itemId", auth, async (req, res) => {
+// Update quantity
+router.put("/update/:artworkId", auth, async (req, res) => {
   try {
     const { quantity } = req.body;
-    const cart = await Cart.findOne({ user: req.user.id });
+    const { artworkId } = req.params;
 
+    let cart = await Cart.findOne({ userId: req.user.userId });
     if (!cart) {
-      return res.status(404).json({ message: "Cart not found" });
+      cart = new Cart({ userId: req.user.userId, items: [] });
     }
 
-    const itemIndex = cart.items.findIndex(
-      (item) => item._id.toString() === req.params.itemId
+    const item = cart.items.find(
+      (item) => item.artworkId.toString() === artworkId
     );
-
-    if (itemIndex === -1) {
-      return res.status(404).json({ message: "Item not found in cart" });
+    if (!item) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Item not found in cart" });
     }
 
-    cart.items[itemIndex].quantity = quantity;
+    if (quantity <= 0) {
+      cart.items = cart.items.filter(
+        (item) => item.artworkId.toString() !== artworkId
+      );
+    } else {
+      item.quantity = quantity;
+    }
+
     await cart.save();
-    res.json(cart);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Server error");
+    res.json({ success: true, cart });
+  } catch (error) {
+    console.error("Update cart error:", error);
+    res.status(500).json({ success: false, message: "Failed to update cart" });
   }
 });
 
-// @route   DELETE api/cart/:itemId
-// @desc    Remove item from cart
-// @access  Private
-router.delete("/:itemId", auth, async (req, res) => {
+// Remove from cart
+router.delete("/remove/:artworkId", auth, async (req, res) => {
   try {
-    const cart = await Cart.findOne({ user: req.user.id });
+    const { artworkId } = req.params;
 
+    let cart = await Cart.findOne({ userId: req.user.userId });
     if (!cart) {
-      return res.status(404).json({ message: "Cart not found" });
+      return res.json({ success: true, cart: { items: [], total: 0 } });
     }
 
     cart.items = cart.items.filter(
-      (item) => item._id.toString() !== req.params.itemId
+      (item) => item.artworkId.toString() !== artworkId
     );
-
     await cart.save();
-    res.json(cart);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Server error");
+
+    res.json({ success: true, cart });
+  } catch (error) {
+    console.error("Remove from cart error:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to remove from cart" });
   }
 });
 
-// @route   DELETE api/cart
-// @desc    Clear cart
-// @access  Private
-router.delete("/", auth, async (req, res) => {
+// Clear cart
+router.delete("/clear", auth, async (req, res) => {
   try {
-    const cart = await Cart.findOne({ user: req.user.id });
-
+    let cart = await Cart.findOne({ userId: req.user.userId });
     if (!cart) {
-      return res.status(404).json({ message: "Cart not found" });
+      return res.json({ success: true, cart: { items: [], total: 0 } });
     }
 
     cart.items = [];
     await cart.save();
-    res.json(cart);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Server error");
+
+    res.json({
+      success: true,
+      cart: { items: [], total: 0 },
+    });
+  } catch (error) {
+    console.error("Clear cart error:", error);
+    res.status(500).json({ success: false, message: "Failed to clear cart" });
   }
 });
 

@@ -24,12 +24,13 @@ import {
   ExitToApp,
   Dashboard,
 } from "@mui/icons-material";
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuth } from "../../context/AuthContext";
+import { toast } from "react-toastify";
 
 const Header = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { user, logout } = useAuth();
+  const { user, logout, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -56,17 +57,25 @@ const Header = () => {
     setMobileOpen(!mobileOpen);
   };
 
+  const handleCartClick = () => {
+    if (!isAuthenticated) {
+      toast.info("Please login to view your cart");
+      navigate("/login");
+      return;
+    }
+    navigate("/cart");
+  };
+
   const menuItems = [
     { text: "Home", path: "/" },
     { text: "Gallery", path: "/gallery" },
     { text: "Exhibitions", path: "/exhibitions" },
+    { text: "Studio", path: "/studio" },
     { text: "Awards", path: "/awards" },
-    { text: "Patron", path: "/patron" },
-    { text: "About", path: "/about" },
     { text: "Press", path: "/press" },
     { text: "Testimonials", path: "/testimonials" },
-    { text: "Studio", path: "/studio" },
-    // ...(user?.role === "admin" ? [{ text: "Admin", path: "/admin" }] : []),
+    { text: "Patron", path: "/patron" },
+    { text: "About", path: "/about" },
   ];
 
   const drawer = (
@@ -228,12 +237,7 @@ const Header = () => {
         )}
 
         <Box sx={{ display: "flex", alignItems: "center" }}>
-          <IconButton
-            color="inherit"
-            component={RouterLink}
-            to="/cart"
-            sx={{ mr: 1 }}
-          >
+          <IconButton color="inherit" onClick={handleCartClick} sx={{ mr: 1 }}>
             <Badge badgeContent={0} color="secondary">
               <ShoppingCart />
             </Badge>
@@ -242,40 +246,75 @@ const Header = () => {
           {user ? (
             <>
               <Box sx={{ display: "flex", alignItems: "center" }}>
-                <Typography variant="body1" sx={{ mr: 1 }}>
+                <Typography variant="body1" sx={{ mr: 1, color: "white" }}>
                   {user.name}
                 </Typography>
-                <IconButton color="inherit" onClick={handleMenu}>
+                <IconButton
+                  onClick={handleMenu}
+                  color="inherit"
+                  size="large"
+                  sx={{ ml: 1 }}
+                >
                   <Person />
                 </IconButton>
-              </Box>
-              <Menu
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={handleClose}
-              >
-                {user.role === "admin" && (
+                <Menu
+                  anchorEl={anchorEl}
+                  open={Boolean(anchorEl)}
+                  onClose={handleClose}
+                  sx={{
+                    "& .MuiPaper-root": {
+                      backgroundColor: "white",
+                      color: "black",
+                      boxShadow: "0px 2px 10px rgba(0,0,0,0.1)",
+                      borderRadius: 1,
+                      mt: 1,
+                    },
+                  }}
+                >
+                  {user.role === "admin" && (
+                    <MenuItem
+                      onClick={() => {
+                        navigate("/admin/dashboard");
+                        handleClose();
+                      }}
+                      sx={{
+                        color: "black",
+                        "&:hover": {
+                          backgroundColor: "rgba(0, 0, 0, 0.04)",
+                        },
+                      }}
+                    >
+                      <Dashboard sx={{ mr: 1 }} />
+                      Admin Dashboard
+                    </MenuItem>
+                  )}
                   <MenuItem
-                    component={RouterLink}
-                    to="/admin"
-                    onClick={handleClose}
+                    onClick={handleLogout}
+                    sx={{
+                      color: "black",
+                      "&:hover": {
+                        backgroundColor: "rgba(0, 0, 0, 0.04)",
+                      },
+                    }}
                   >
-                    <Dashboard sx={{ mr: 1 }} />
-                    Admin Dashboard
+                    <ExitToApp sx={{ mr: 1 }} />
+                    Logout
                   </MenuItem>
-                )}
-                <MenuItem onClick={handleLogout}>
-                  <ExitToApp sx={{ mr: 1 }} />
-                  Logout
-                </MenuItem>
-              </Menu>
+                </Menu>
+              </Box>
             </>
           ) : (
             <Button
               color="inherit"
               component={RouterLink}
               to="/login"
-              sx={{ ml: 1 }}
+              sx={{
+                textTransform: "none",
+                fontSize: "1rem",
+                "&:hover": {
+                  bgcolor: "rgba(255, 255, 255, 0.1)",
+                },
+              }}
             >
               Login
             </Button>
@@ -289,7 +328,20 @@ const Header = () => {
         open={mobileOpen}
         onClose={handleDrawerToggle}
         ModalProps={{
-          keepMounted: true,
+          keepMounted: true, // Better open performance on mobile.
+        }}
+        sx={{
+          display: { xs: "block", md: "none" },
+          "& .MuiDrawer-paper": {
+            boxSizing: "border-box",
+            width: 240,
+            bgcolor: "rgba(0, 0, 0, 0.8)",
+            backdropFilter: "blur(10px)",
+            WebkitBackdropFilter: "blur(10px)",
+            border: "1px solid rgba(255, 255, 255, 0.1)",
+            boxShadow:
+              "0 4px 20px rgba(0, 0, 0, 0.3), 0 6px 50px rgba(0, 0, 0, 0.1)",
+          },
         }}
       >
         {drawer}

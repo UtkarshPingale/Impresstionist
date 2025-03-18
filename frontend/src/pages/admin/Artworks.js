@@ -31,6 +31,7 @@ import {
   Visibility as ViewIcon,
 } from "@mui/icons-material";
 import axios from "axios";
+import ImageUpload from "../../components/common/ImageUpload";
 
 const AdminArtworks = () => {
   const [artworks, setArtworks] = useState([]);
@@ -51,6 +52,8 @@ const AdminArtworks = () => {
     featured: false,
     available: true,
   });
+  const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
+  const [arModelName, setArModelName] = useState("");
 
   const categories = [
     "Painting",
@@ -136,20 +139,26 @@ const AdminArtworks = () => {
     }));
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    setFormData((prev) => ({
-      ...prev,
-      image: file,
-    }));
+  const handleImageSelect = (file) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreviewUrl(reader.result);
+      setFormData((prev) => ({
+        ...prev,
+        image: reader.result,
+      }));
+    };
+    reader.readAsDataURL(file);
   };
 
-  const handleARModelChange = (e) => {
-    const file = e.target.files[0];
-    setFormData((prev) => ({
-      ...prev,
-      arModel: file,
-    }));
+  const handleArModelSelect = (file) => {
+    if (file) {
+      setArModelName(file.name);
+      setFormData((prev) => ({
+        ...prev,
+        arModel: file,
+      }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -357,27 +366,23 @@ const AdminArtworks = () => {
                 required
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
-              <Button variant="outlined" component="label" fullWidth>
-                Upload Image
-                <input
-                  type="file"
-                  hidden
-                  accept="image/*"
-                  onChange={handleImageChange}
-                />
-              </Button>
+            <Grid item xs={12}>
+              <ImageUpload
+                onFileSelect={handleImageSelect}
+                previewUrl={imagePreviewUrl}
+                label="Upload Artwork Image"
+              />
             </Grid>
-            <Grid item xs={12} sm={6}>
-              <Button variant="outlined" component="label" fullWidth>
-                Upload AR Model
-                <input
-                  type="file"
-                  hidden
-                  accept=".glb,.gltf"
-                  onChange={handleARModelChange}
-                />
-              </Button>
+            <Grid item xs={12}>
+              <ImageUpload
+                onFileSelect={handleArModelSelect}
+                previewUrl={null}
+                label="Upload AR Model"
+                acceptedFiles=".glb,.gltf"
+                helperText="Supported formats: GLB, GLTF"
+                showPreview={false}
+                customText={arModelName || "No file selected"}
+              />
             </Grid>
           </Grid>
         </DialogContent>

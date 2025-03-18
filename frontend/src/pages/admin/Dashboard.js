@@ -26,14 +26,18 @@ import {
   Dashboard as DashboardIcon,
   Palette as ArtworkIcon,
   Collections as ExhibitionIcon,
-  People as UserIcon,
-  ShoppingCart as OrderIcon,
+  EmojiEvents as AwardsIcon,
+  People as PatronIcon,
+  Article as PressIcon,
+  Star as TestimonialsIcon,
   Settings as SettingsIcon,
 } from "@mui/icons-material";
 import AdminArtworks from "./Artworks";
 import AdminExhibitions from "./Exhibitions";
-import AdminOrders from "./Orders";
-import AdminUsers from "./Users";
+import AdminAwards from "./Awards";
+import AdminPress from "./Press";
+import AdminTestimonials from "./Testimonials";
+import AdminPatron from "./Patron";
 import AdminSettings from "./Settings";
 
 const Dashboard = () => {
@@ -49,18 +53,24 @@ const Dashboard = () => {
       icon: <ExhibitionIcon />,
       path: "/admin/exhibitions",
     },
-    { text: "Orders", icon: <OrderIcon />, path: "/admin/orders" },
-    { text: "Users", icon: <UserIcon />, path: "/admin/users" },
+    { text: "Awards", icon: <AwardsIcon />, path: "/admin/awards" },
+    { text: "Patron", icon: <PatronIcon />, path: "/admin/patron" },
+    { text: "Press & Media", icon: <PressIcon />, path: "/admin/press" },
+    {
+      text: "Testimonials",
+      icon: <TestimonialsIcon />,
+      path: "/admin/testimonials",
+    },
     { text: "Settings", icon: <SettingsIcon />, path: "/admin/settings" },
   ];
 
   const DashboardHome = () => (
     <Box>
       <Typography variant="h4" gutterBottom>
-        Dashboard Overview
+        Admin Dashboard
       </Typography>
       <Grid container spacing={3}>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid item xs={12} sm={6} md={6}>
           <Card>
             <CardContent>
               <Typography color="textSecondary" gutterBottom>
@@ -69,13 +79,13 @@ const Dashboard = () => {
               <Typography variant="h4">0</Typography>
             </CardContent>
             <CardActions>
-              <Button size="small" component={RouterLink} to="/admin/artworks">
+              {/* <Button size="small" component={RouterLink} to="/admin/artworks">
                 Manage Artworks
-              </Button>
+              </Button> */}
             </CardActions>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid item xs={12} sm={6} md={6}>
           <Card>
             <CardContent>
               <Typography color="textSecondary" gutterBottom>
@@ -84,44 +94,34 @@ const Dashboard = () => {
               <Typography variant="h4">0</Typography>
             </CardContent>
             <CardActions>
-              <Button
+              {/* <Button
                 size="small"
                 component={RouterLink}
                 to="/admin/exhibitions"
               >
                 Manage Exhibitions
-              </Button>
+              </Button> */}
             </CardActions>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid item xs={12} sm={6} md={6}>
           <Card>
             <CardContent>
               <Typography color="textSecondary" gutterBottom>
-                Pending Orders
+                Total Awards
               </Typography>
               <Typography variant="h4">0</Typography>
             </CardContent>
-            <CardActions>
-              <Button size="small" component={RouterLink} to="/admin/orders">
-                View Orders
-              </Button>
-            </CardActions>
           </Card>
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid item xs={12} sm={6} md={6}>
           <Card>
             <CardContent>
               <Typography color="textSecondary" gutterBottom>
-                Total Users
+                Total Patrons
               </Typography>
               <Typography variant="h4">0</Typography>
             </CardContent>
-            <CardActions>
-              <Button size="small" component={RouterLink} to="/admin/users">
-                Manage Users
-              </Button>
-            </CardActions>
           </Card>
         </Grid>
       </Grid>
@@ -169,8 +169,10 @@ const Dashboard = () => {
             <Route path="/" element={<DashboardHome />} />
             <Route path="/artworks/*" element={<AdminArtworks />} />
             <Route path="/exhibitions/*" element={<AdminExhibitions />} />
-            <Route path="/orders/*" element={<AdminOrders />} />
-            <Route path="/users/*" element={<AdminUsers />} />
+            <Route path="/awards/*" element={<AdminAwards />} />
+            <Route path="/patron/*" element={<AdminPatron />} />
+            <Route path="/press/*" element={<AdminPress />} />
+            <Route path="/testimonials/*" element={<AdminTestimonials />} />
             <Route path="/settings/*" element={<AdminSettings />} />
           </Routes>
         </Grid>

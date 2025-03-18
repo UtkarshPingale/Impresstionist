@@ -10,7 +10,7 @@ import {
   Alert,
   CircularProgress,
 } from "@mui/material";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../context/AuthContext";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -37,24 +37,23 @@ const Login = () => {
     try {
       // Check for admin credentials
       if (formData.email === "admin" && formData.password === "admin") {
-        // Set admin user data
-        const adminUser = {
-          name: "Administrator",
-          email: "admin",
-          role: "admin",
-        };
-        // Update the auth context
-        setUser(adminUser);
-        // Store in localStorage
-        localStorage.setItem("user", JSON.stringify(adminUser));
-        localStorage.setItem("token", "admin-token");
-        navigate("/");
+        // Use the login function to properly set auth state
+        const result = await login("admin", "admin");
+        if (result.success) {
+          navigate("/");
+        } else {
+          setError(result.message || "Admin login failed");
+        }
         return;
       }
 
       // Regular user login
-      await login(formData.email, formData.password);
-      navigate("/");
+      const result = await login(formData.email, formData.password);
+      if (result.success) {
+        navigate("/");
+      } else {
+        setError(result.message || "Login failed");
+      }
     } catch (error) {
       console.error("Login error:", error);
       setError(

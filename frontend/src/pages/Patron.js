@@ -13,8 +13,11 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
+  CardMedia,
+  useTheme,
+  Chip,
 } from "@mui/material";
-import { Check as CheckIcon } from "@mui/icons-material";
+import { Check as CheckIcon, People as PeopleIcon } from "@mui/icons-material";
 
 const patronTiers = [
   {
@@ -55,91 +58,103 @@ const patronTiers = [
 ];
 
 const Patron = () => {
+  const theme = useTheme();
+
+  // This would typically come from a backend API
+  const patrons = [
+    {
+      id: 1,
+      name: "Robert Williams",
+      title: "Lead Patron",
+      organization: "Williams Art Foundation",
+      image: "https://source.unsplash.com/random/400x300?portrait",
+      contribution: "Major Contributor",
+      testimonial:
+        "Supporting emerging artists has always been our foundation's mission. The innovative work being produced here aligns perfectly with our vision for the future of art.",
+      featured: true,
+    },
+    {
+      id: 2,
+      name: "Elizabeth Chang",
+      title: "Arts Advocate",
+      organization: "Contemporary Arts Society",
+      image: "https://source.unsplash.com/random/400x300?portrait",
+      contribution: "Sustaining Member",
+      testimonial:
+        "The dedication to pushing artistic boundaries while maintaining the highest standards of quality is truly remarkable.",
+      featured: true,
+    },
+  ];
+
   return (
-    <Container maxWidth="lg">
-      <Box sx={{ mt: 8, mb: 6 }}>
-        <Typography variant="h2" component="h1" align="center" gutterBottom>
-          Become a Patron
+    <Container maxWidth="lg" sx={{ py: 8 }}>
+      <Box textAlign="center" mb={6}>
+        <Typography variant="h2" component="h1" gutterBottom>
+          Our Patrons
         </Typography>
-        <Typography variant="h5" align="center" color="textSecondary" paragraph>
-          Support the arts and receive exclusive benefits
+        <Typography variant="h5" color="text.secondary" paragraph>
+          Supporting excellence in contemporary art
         </Typography>
-        <Grid container spacing={4} sx={{ mt: 4 }}>
-          {patronTiers.map((tier) => (
-            <Grid item key={tier.title} xs={12} md={4}>
-              <Card
-                elevation={3}
-                sx={{
-                  height: "100%",
-                  display: "flex",
-                  flexDirection: "column",
-                }}
-              >
-                <CardContent sx={{ flexGrow: 1 }}>
-                  <Typography
-                    gutterBottom
-                    variant="h4"
-                    component="h2"
-                    align="center"
-                  >
-                    {tier.title}
-                  </Typography>
-                  <Typography
-                    variant="h3"
-                    align="center"
-                    color="primary"
-                    gutterBottom
-                  >
-                    ${tier.price}
-                    <Typography
-                      component="span"
-                      variant="h6"
-                      color="textSecondary"
-                    >
-                      /{tier.period}
-                    </Typography>
-                  </Typography>
-                  <List>
-                    {tier.benefits.map((benefit) => (
-                      <ListItem key={benefit}>
-                        <ListItemIcon>
-                          <CheckIcon color="primary" />
-                        </ListItemIcon>
-                        <ListItemText primary={benefit} />
-                      </ListItem>
-                    ))}
-                  </List>
-                </CardContent>
-                <CardActions sx={{ justifyContent: "center", pb: 3 }}>
-                  <Button variant="contained" color="primary" size="large">
-                    Join {tier.title} Circle
-                  </Button>
-                </CardActions>
-              </Card>
-            </Grid>
-          ))}
-          <Grid item xs={12}>
-            <Paper elevation={3} sx={{ p: 4, mt: 4 }}>
-              <Typography variant="h4" gutterBottom>
-                Additional Information
-              </Typography>
-              <Typography paragraph>
-                Your patronage helps support our ongoing artistic endeavors,
-                exhibitions, and community outreach programs. All contributions
-                are tax-deductible to the extent allowed by law.
-              </Typography>
-              <Typography paragraph>
-                For custom patronage options or corporate sponsorship
-                opportunities, please contact our development team at
-                patron@example.com or call (555) 123-4567.
-              </Typography>
-              <Button variant="outlined" color="primary" size="large">
-                Download Patron Program Guide
-              </Button>
-            </Paper>
-          </Grid>
-        </Grid>
       </Box>
+
+      <Grid container spacing={4}>
+        {patrons.map((patron) => (
+          <Grid item xs={12} md={6} key={patron.id}>
+            <Card
+              sx={{
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
+                transition: "transform 0.2s",
+                "&:hover": {
+                  transform: "scale(1.02)",
+                },
+              }}
+            >
+              <CardMedia
+                component="img"
+                height="300"
+                image={patron.image}
+                alt={patron.name}
+                sx={{ objectFit: "cover" }}
+              />
+              <CardContent>
+                <Box display="flex" alignItems="center" mb={2}>
+                  <PeopleIcon
+                    sx={{
+                      fontSize: 40,
+                      color: theme.palette.primary.main,
+                      mr: 2,
+                    }}
+                  />
+                  <Box>
+                    <Typography variant="h5" component="h2">
+                      {patron.name}
+                    </Typography>
+                    <Typography color="text.secondary">
+                      {patron.title} • {patron.organization}
+                    </Typography>
+                  </Box>
+                </Box>
+                {patron.featured && (
+                  <Chip
+                    label="Featured Patron"
+                    color="primary"
+                    size="small"
+                    sx={{ mb: 2 }}
+                  />
+                )}
+                <Typography variant="body1" paragraph>
+                  {patron.testimonial}
+                </Typography>
+                <Typography variant="subtitle2" color="primary" sx={{ mt: 2 }}>
+                  {patron.contribution}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
     </Container>
   );
 };

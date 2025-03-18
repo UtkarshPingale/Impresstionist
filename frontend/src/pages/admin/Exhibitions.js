@@ -24,6 +24,7 @@ import {
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import axios from "axios";
+import ImageUpload from "../../components/common/ImageUpload";
 
 const AdminExhibitions = () => {
   const [exhibitions, setExhibitions] = useState([]);
@@ -45,6 +46,7 @@ const AdminExhibitions = () => {
     image: null,
     status: "upcoming",
   });
+  const [previewUrl, setPreviewUrl] = useState(null);
 
   const admissionTypes = ["free", "paid", "donation"];
   const statusOptions = ["upcoming", "current", "past"];
@@ -123,12 +125,16 @@ const AdminExhibitions = () => {
     }));
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    setFormData((prev) => ({
-      ...prev,
-      image: file,
-    }));
+  const handleFileSelect = (file) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreviewUrl(reader.result);
+      setFormData((prev) => ({
+        ...prev,
+        image: reader.result,
+      }));
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSubmit = async (e) => {
@@ -399,16 +405,12 @@ const AdminExhibitions = () => {
                 ))}
               </TextField>
             </Grid>
-            <Grid item xs={12} sm={6}>
-              <Button variant="outlined" component="label" fullWidth>
-                Upload Image
-                <input
-                  type="file"
-                  hidden
-                  accept="image/*"
-                  onChange={handleImageChange}
-                />
-              </Button>
+            <Grid item xs={12}>
+              <ImageUpload
+                onFileSelect={handleFileSelect}
+                previewUrl={previewUrl}
+                label="Upload Exhibition Image"
+              />
             </Grid>
           </Grid>
         </DialogContent>

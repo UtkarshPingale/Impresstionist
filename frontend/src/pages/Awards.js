@@ -1,128 +1,86 @@
 import React from "react";
-import { Container, Typography, Box, Grid, Paper } from "@mui/material";
 import {
-  Timeline,
-  TimelineItem,
-  TimelineSeparator,
-  TimelineConnector,
-  TimelineContent,
-  TimelineDot,
-} from "@mui/lab";
-import { EmojiEvents as TrophyIcon } from "@mui/icons-material";
-
-const awards = [
-  {
-    year: "2023",
-    title: "Excellence in Contemporary Art",
-    organization: "International Art Foundation",
-    description:
-      "Awarded for outstanding contribution to contemporary art through innovative techniques and meaningful storytelling.",
-  },
-  {
-    year: "2022",
-    title: "Best Solo Exhibition",
-    organization: "National Gallery Association",
-    description:
-      'Recognized for the groundbreaking solo exhibition "Reflections of Tomorrow".',
-  },
-  {
-    year: "2021",
-    title: "Artist of the Year",
-    organization: "Modern Art Society",
-    description:
-      "Selected as Artist of the Year for exceptional creativity and influence in the modern art scene.",
-  },
-  {
-    year: "2020",
-    title: "Innovation in Digital Art",
-    organization: "Digital Arts Foundation",
-    description:
-      "Honored for pioneering work in combining traditional and digital art forms.",
-  },
-];
+  Container,
+  Typography,
+  Grid,
+  Card,
+  CardContent,
+  Box,
+  useTheme,
+} from "@mui/material";
+import { EmojiEvents as AwardIcon } from "@mui/icons-material";
 
 const Awards = () => {
+  const theme = useTheme();
+
+  // This would typically come from a backend API
+  // For now, we'll use the same structure as the admin page
+  const awards = [
+    {
+      id: 1,
+      title: "Excellence in Abstract Art",
+      year: "2023",
+      organization: "International Art Association",
+      description: "Awarded for outstanding contribution to abstract art",
+    },
+    {
+      id: 2,
+      title: "Best Contemporary Artist",
+      year: "2022",
+      organization: "Modern Art Foundation",
+      description: "Recognition for innovative approaches in contemporary art",
+    },
+  ];
+
   return (
-    <Container maxWidth="lg">
-      <Box sx={{ mt: 8, mb: 6 }}>
-        <Typography variant="h2" component="h1" align="center" gutterBottom>
+    <Container maxWidth="lg" sx={{ py: 8 }}>
+      <Box textAlign="center" mb={6}>
+        <Typography variant="h2" component="h1" gutterBottom>
           Awards & Recognition
         </Typography>
-        <Grid container spacing={4}>
-          <Grid item xs={12}>
-            <Paper elevation={3} sx={{ p: 4 }}>
-              <Timeline position="alternate">
-                {awards.map((award, index) => (
-                  <TimelineItem key={index}>
-                    <TimelineSeparator>
-                      <TimelineDot color="primary">
-                        <TrophyIcon />
-                      </TimelineDot>
-                      {index < awards.length - 1 && <TimelineConnector />}
-                    </TimelineSeparator>
-                    <TimelineContent>
-                      <Paper elevation={3} sx={{ p: 3 }}>
-                        <Typography variant="h6" component="h3">
-                          {award.title}
-                        </Typography>
-                        <Typography color="textSecondary">
-                          {award.year} - {award.organization}
-                        </Typography>
-                        <Typography sx={{ mt: 2 }}>
-                          {award.description}
-                        </Typography>
-                      </Paper>
-                    </TimelineContent>
-                  </TimelineItem>
-                ))}
-              </Timeline>
-            </Paper>
-          </Grid>
-          <Grid item xs={12}>
-            <Paper elevation={3} sx={{ p: 4 }}>
-              <Typography variant="h4" gutterBottom>
-                Additional Honors
-              </Typography>
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
-                  <Typography variant="h6" gutterBottom>
-                    Residencies
-                  </Typography>
-                  <ul>
-                    <li>
-                      <Typography>
-                        Artist in Residence, Paris Art Institute (2022)
-                      </Typography>
-                    </li>
-                    <li>
-                      <Typography>
-                        Guest Artist, Tokyo Contemporary Arts Center (2021)
-                      </Typography>
-                    </li>
-                  </ul>
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <Typography variant="h6" gutterBottom>
-                    Grants & Fellowships
-                  </Typography>
-                  <ul>
-                    <li>
-                      <Typography>
-                        Arts Council Fellowship Grant (2023)
-                      </Typography>
-                    </li>
-                    <li>
-                      <Typography>
-                        Creative Development Fund Recipient (2022)
-                      </Typography>
-                    </li>
-                  </ul>
-                </Grid>
-              </Grid>
-            </Paper>
-          </Grid>
-        </Grid>
+        <Typography variant="h5" color="text.secondary" paragraph>
+          Celebrating artistic excellence and innovation
+        </Typography>
       </Box>
+
+      <Grid container spacing={4}>
+        {awards.map((award) => (
+          <Grid item xs={12} md={6} key={award.id}>
+            <Card
+              sx={{
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
+                transition: "transform 0.2s",
+                "&:hover": {
+                  transform: "scale(1.02)",
+                },
+              }}
+            >
+              <CardContent>
+                <Box display="flex" alignItems="center" mb={2}>
+                  <AwardIcon
+                    sx={{
+                      fontSize: 40,
+                      color: theme.palette.primary.main,
+                      mr: 2,
+                    }}
+                  />
+                  <Typography variant="h5" component="h2">
+                    {award.title}
+                  </Typography>
+                </Box>
+                <Typography color="text.secondary" gutterBottom>
+                  {award.year} • {award.organization}
+                </Typography>
+                <Typography variant="body1" paragraph>
+                  {award.description}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
     </Container>
   );
 };

@@ -20,14 +20,29 @@ connectDB()
   });
 
 // Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Debug middleware
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.path}`);
+  next();
+});
 
 // Routes
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/artworks", require("./routes/artworks"));
 app.use("/api/exhibitions", require("./routes/exhibitions"));
+app.use("/api/cart", require("./routes/cart"));
+app.use("/api/orders", require("./routes/orders"));
 
 // Error handling middleware
 app.use((err, req, res, next) => {

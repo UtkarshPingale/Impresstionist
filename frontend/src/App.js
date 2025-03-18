@@ -16,15 +16,17 @@ import Studio from "./pages/Studio";
 import Cart from "./pages/Cart";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import AdminDashboard from "./pages/admin/Dashboard";
+import Dashboard from "./pages/admin/Dashboard";
 import AdminArtworks from "./pages/admin/Artworks";
 import AdminExhibitions from "./pages/admin/Exhibitions";
 import PrivateRoute from "./components/routing/PrivateRoute";
-import { AuthProvider } from "./contexts/AuthContext";
+import { AuthProvider } from "./context/AuthContext";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import Terms from "./pages/Terms";
 import Shipping from "./pages/Shipping";
 import AuthenticityGuarantee from "./pages/AuthenticityGuarantee";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const theme = createTheme({
   palette: {
@@ -78,48 +80,42 @@ const theme = createTheme({
 
 function App() {
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <AuthProvider>
+    <AuthProvider>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
         <Router>
           <div className="flex flex-col min-h-screen">
             <Header />
             <main className="flex-grow">
               <Routes>
                 <Route path="/" element={<Home />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/studio" element={<Studio />} />
                 <Route path="/gallery" element={<Gallery />} />
                 <Route path="/exhibitions" element={<Exhibitions />} />
                 <Route path="/awards" element={<Awards />} />
-                <Route path="/patron" element={<Patron />} />
-                <Route path="/about" element={<About />} />
                 <Route path="/press" element={<Press />} />
                 <Route path="/testimonials" element={<Testimonials />} />
-                <Route path="/studio" element={<Studio />} />
-                <Route path="/cart" element={<Cart />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                <Route path="/terms" element={<Terms />} />
-                <Route path="/shipping" element={<Shipping />} />
+                <Route path="/patron" element={<Patron />} />
+                <Route path="/privacy" element={<PrivacyPolicy />} />
                 <Route
                   path="/authenticity"
                   element={<AuthenticityGuarantee />}
                 />
-                <Route
-                  path="/admin/*"
-                  element={
-                    <PrivateRoute>
-                      <AdminDashboard />
-                    </PrivateRoute>
-                  }
-                />
+                <Route path="/admin/*" element={<Dashboard />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/terms" element={<Terms />} />
+                <Route path="/shipping" element={<Shipping />} />
+                <Route path="/cart" element={<Cart />} />
               </Routes>
             </main>
             <Footer />
+            <ToastContainer position="bottom-left" />
           </div>
         </Router>
-      </AuthProvider>
-    </ThemeProvider>
+      </ThemeProvider>
+    </AuthProvider>
   );
 }
 

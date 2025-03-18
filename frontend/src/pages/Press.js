@@ -10,8 +10,13 @@ import {
   CardMedia,
   Button,
   Chip,
+  CardActions,
+  useTheme,
 } from "@mui/material";
-import { Launch as LaunchIcon } from "@mui/icons-material";
+import {
+  Launch as LaunchIcon,
+  Article as ArticleIcon,
+} from "@mui/icons-material";
 
 const pressReleases = [
   {
@@ -47,122 +52,103 @@ const pressReleases = [
 ];
 
 const Press = () => {
+  const theme = useTheme();
+
+  // This would typically come from a backend API
+  const pressItems = [
+    {
+      id: 1,
+      title: "The Evolution of Abstract Art",
+      publication: "Art Weekly",
+      date: "2023-05-15",
+      description:
+        "An in-depth look at the innovative approaches in contemporary abstract art",
+      link: "https://artweekly.com/article",
+      image: "https://source.unsplash.com/random/800x400?abstract-art",
+    },
+    {
+      id: 2,
+      title: "Breaking Boundaries in Modern Art",
+      publication: "Creative Magazine",
+      date: "2023-04-01",
+      description:
+        "Feature article exploring the intersection of traditional and contemporary techniques",
+      link: "https://creativemag.com/article",
+      image: "https://source.unsplash.com/random/800x400?modern-art",
+    },
+  ];
+
   return (
-    <Container maxWidth="lg">
-      <Box sx={{ mt: 8, mb: 6 }}>
-        <Typography variant="h2" component="h1" align="center" gutterBottom>
+    <Container maxWidth="lg" sx={{ py: 8 }}>
+      <Box textAlign="center" mb={6}>
+        <Typography variant="h2" component="h1" gutterBottom>
           Press & Media
         </Typography>
-        <Grid container spacing={4}>
-          <Grid item xs={12}>
-            <Paper elevation={3} sx={{ p: 4 }}>
-              <Typography variant="h4" gutterBottom>
-                Recent Coverage
-              </Typography>
-              <Grid container spacing={3}>
-                {pressReleases.map((article, index) => (
-                  <Grid item xs={12} md={6} lg={4} key={index}>
-                    <Card elevation={3}>
-                      <CardMedia
-                        component="img"
-                        height="200"
-                        image={article.image}
-                        alt={article.title}
-                        sx={{ objectFit: "cover" }}
-                      />
-                      <CardContent>
-                        <Typography
-                          gutterBottom
-                          variant="h6"
-                          component="h3"
-                          sx={{
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            display: "-webkit-box",
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: "vertical",
-                          }}
-                        >
-                          {article.title}
-                        </Typography>
-                        <Typography
-                          variant="subtitle2"
-                          color="textSecondary"
-                          gutterBottom
-                        >
-                          {article.publication} - {article.date}
-                        </Typography>
-                        <Typography
-                          color="textSecondary"
-                          sx={{
-                            mb: 2,
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            display: "-webkit-box",
-                            WebkitLineClamp: 3,
-                            WebkitBoxOrient: "vertical",
-                          }}
-                        >
-                          {article.excerpt}
-                        </Typography>
-                        <Box sx={{ mb: 2 }}>
-                          {article.tags.map((tag, idx) => (
-                            <Chip
-                              key={idx}
-                              label={tag}
-                              size="small"
-                              sx={{ mr: 1, mb: 1 }}
-                            />
-                          ))}
-                        </Box>
-                        <Button
-                          variant="outlined"
-                          endIcon={<LaunchIcon />}
-                          href={article.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          Read More
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                ))}
-              </Grid>
-            </Paper>
-          </Grid>
-          <Grid item xs={12}>
-            <Paper elevation={3} sx={{ p: 4 }}>
-              <Typography variant="h4" gutterBottom>
-                Press Kit
-              </Typography>
-              <Typography paragraph>
-                Download our press kit for high-resolution images, artist bio,
-                and recent press releases.
-              </Typography>
-              <Button variant="contained" color="primary">
-                Download Press Kit
-              </Button>
-            </Paper>
-          </Grid>
-          <Grid item xs={12}>
-            <Paper elevation={3} sx={{ p: 4 }}>
-              <Typography variant="h4" gutterBottom>
-                Media Inquiries
-              </Typography>
-              <Typography paragraph>
-                For press and media inquiries, please contact our media
-                relations team:
-              </Typography>
-              <Typography>
-                Email: press@example.com
-                <br />
-                Phone: +1 (555) 123-4567
-              </Typography>
-            </Paper>
-          </Grid>
-        </Grid>
+        <Typography variant="h5" color="text.secondary" paragraph>
+          Featured articles and media coverage
+        </Typography>
       </Box>
+
+      <Grid container spacing={4}>
+        {pressItems.map((item) => (
+          <Grid item xs={12} md={6} key={item.id}>
+            <Card
+              sx={{
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
+                transition: "transform 0.2s",
+                "&:hover": {
+                  transform: "scale(1.02)",
+                },
+              }}
+            >
+              <CardMedia
+                component="img"
+                height="240"
+                image={item.image}
+                alt={item.title}
+                sx={{
+                  objectFit: "cover",
+                  borderBottom: `1px solid ${theme.palette.divider}`,
+                }}
+              />
+              <CardContent sx={{ flexGrow: 1 }}>
+                <Box display="flex" alignItems="center" mb={2}>
+                  <ArticleIcon
+                    sx={{
+                      fontSize: 40,
+                      color: theme.palette.primary.main,
+                      mr: 2,
+                    }}
+                  />
+                  <Typography variant="h5" component="h2">
+                    {item.title}
+                  </Typography>
+                </Box>
+                <Typography color="text.secondary" gutterBottom>
+                  {item.publication} •{" "}
+                  {new Date(item.date).toLocaleDateString()}
+                </Typography>
+                <Typography variant="body1" paragraph>
+                  {item.description}
+                </Typography>
+              </CardContent>
+              <CardActions>
+                <Button
+                  size="small"
+                  color="primary"
+                  href={item.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Read Article
+                </Button>
+              </CardActions>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
     </Container>
   );
 };

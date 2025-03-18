@@ -1,60 +1,40 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "../config/axios";
+import { toast } from "react-toastify";
+import { useAuth } from "../context/AuthContext";
 import {
-  Box,
   Container,
-  Grid,
+  Box,
   Typography,
-  Card,
-  CardContent,
-  CardMedia,
   Button,
-  IconButton,
-  TextField,
-  Divider,
-  useTheme,
-  useMediaQuery,
+  CircularProgress,
 } from "@mui/material";
-import {
-  Delete as DeleteIcon,
-  Add as AddIcon,
-  Remove as RemoveIcon,
-} from "@mui/icons-material";
-import { useAuth } from "../contexts/AuthContext";
-import axios from "axios";
 
 const Cart = () => {
-  const [cart, setCart] = useState(null);
+  const [cart, setCart] = useState({ items: [], total: 0 });
   const [loading, setLoading] = useState(true);
-  const [checkoutStep, setCheckoutStep] = useState(1);
-  const [shippingAddress, setShippingAddress] = useState({
-    street: "",
-    city: "",
-    state: "",
-    zipCode: "",
-    country: "",
-  });
-  const { user } = useAuth();
+  const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   useEffect(() => {
-    if (!user) {
-      navigate("/login");
+    if (!isAuthenticated) {
+      setLoading(false);
       return;
     }
     fetchCart();
-  }, [user, navigate]);
+  }, [isAuthenticated]);
 
   const fetchCart = async () => {
     try {
-      const response = await axios.get("/api/cart", {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
-      setCart(response.data);
+      setLoading(true);
+      const response = await axios.get("/api/cart");
+      if (response.data.success) {
+        setCart(response.data.cart);
+      }
     } catch (error) {
-      console.error("Error fetching cart:", error);
+      console.error("Fetch cart error:", error);
+      // Don't show error toast for cart loading
     } finally {
       setLoading(false);
     }
@@ -62,87 +42,102 @@ const Cart = () => {
 
   const updateQuantity = async (artworkId, newQuantity) => {
     try {
-      await axios.put(
-        `/api/cart/items/${artworkId}`,
-        { quantity: newQuantity },
-        {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        }
-      );
-      fetchCart();
+      const response = await axios.put(`/api/cart/update/${artworkId}`, {
+        quantity: newQuantity,
+      });
+      if (response.data.success) {
+        setCart(response.data.cart);
+        toast.success("Cart updated");
+      }
     } catch (error) {
-      console.error("Error updating quantity:", error);
+      console.error("Update quantity error:", error);
+      toast.error("Failed to update cart");
     }
   };
 
   const removeItem = async (artworkId) => {
     try {
-      await axios.delete(`/api/cart/items/${artworkId}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
-      fetchCart();
+      const response = await axios.delete(`/api/cart/remove/${artworkId}`);
+      if (response.data.success) {
+        setCart(response.data.cart);
+        toast.success("Item removed from cart");
+      }
     } catch (error) {
-      console.error("Error removing item:", error);
+      console.error("Remove item error:", error);
+      toast.error("Failed to remove item");
     }
   };
 
-  const handleAddressChange = (field, value) => {
-    setShippingAddress((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleCheckout = async () => {
+  const clearCart = async () => {
     try {
-      // Update cart with shipping address
-      await axios.put(
-        "/api/cart/checkout",
-        { shippingAddress },
-        {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        }
-      );
-      setCheckoutStep(2);
+      const response = await axios.delete("/api/cart/clear");
+      if (response.data.success) {
+        setCart(response.data.cart);
+        toast.success("Cart cleared");
+      }
     } catch (error) {
-      console.error("Error proceeding to checkout:", error);
-    }
-  };
-
-  const handlePayment = async () => {
-    try {
-      const response = await axios.post(
-        "/api/cart/payment",
-        {},
-        {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        }
-      );
-      // Handle successful payment
-      navigate("/payment-success");
-    } catch (error) {
-      console.error("Error processing payment:", error);
+      console.error("Clear cart error:", error);
+      toast.error("Failed to clear cart");
     }
   };
 
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ py: 8 }}>
-        <Typography>Loading...</Typography>
+      <Container maxWidth="lg">
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: "60vh",
+          }}
+        >
+          <CircularProgress />
+        </Box>
       </Container>
     );
   }
 
-  if (!cart || cart.items.length === 0) {
+  if (!isAuthenticated) {
     return (
-      <Container maxWidth="lg" sx={{ py: 8 }}>
-        <Typography variant="h4" align="center" gutterBottom>
-          Your cart is empty
-        </Typography>
-        <Box sx={{ textAlign: "center", mt: 4 }}>
+      <Container maxWidth="sm">
+        <Box sx={{ mt: 8, textAlign: "center" }}>
+          <Typography variant="h4" gutterBottom>
+            Please Login to View Your Cart
+          </Typography>
+          <Typography variant="body1" color="text.secondary" paragraph>
+            You need to be logged in to view and manage your shopping cart
+          </Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => navigate("/login")}
+            sx={{ mt: 2 }}
+          >
+            Login
+          </Button>
+        </Box>
+      </Container>
+    );
+  }
+
+  if (!cart.items.length) {
+    return (
+      <Container maxWidth="sm">
+        <Box sx={{ mt: 8, textAlign: "center" }}>
+          <Typography variant="h4" gutterBottom>
+            Your Cart is Empty
+          </Typography>
+          <Typography variant="body1" color="text.secondary" paragraph>
+            Browse our gallery to find beautiful artworks that speak to you
+          </Typography>
           <Button
             variant="contained"
             color="primary"
             onClick={() => navigate("/gallery")}
+            sx={{ mt: 2, mb: 4 }}
           >
-            Continue Shopping
+            Browse Gallery
           </Button>
         </Box>
       </Container>
@@ -150,173 +145,110 @@ const Cart = () => {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 8 }}>
-      <Typography variant="h2" gutterBottom>
-        Shopping Cart
-      </Typography>
+    <Container maxWidth="lg">
+      <Box sx={{ mt: 4, mb: 4 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 4,
+          }}
+        >
+          <Typography variant="h4" component="h1">
+            Shopping Cart
+          </Typography>
+          <Button variant="contained" color="error" onClick={clearCart}>
+            Clear Cart
+          </Button>
+        </Box>
 
-      <Grid container spacing={4}>
-        {/* Cart Items */}
-        <Grid item xs={12} md={8}>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
           {cart.items.map((item) => (
-            <Card key={item.artwork._id} sx={{ mb: 2 }}>
-              <CardContent>
-                <Grid container spacing={2} alignItems="center">
-                  <Grid item xs={12} sm={3}>
-                    <CardMedia
-                      component="img"
-                      height="120"
-                      image={item.artwork.images[0]?.url || "/placeholder.jpg"}
-                      alt={item.artwork.title}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={9}>
-                    <Typography variant="h6">{item.artwork.title}</Typography>
-                    <Typography color="text.secondary">
-                      ${item.price.toLocaleString()}
-                    </Typography>
-                    <Box sx={{ display: "flex", alignItems: "center", mt: 1 }}>
-                      <IconButton
-                        size="small"
-                        onClick={() =>
-                          updateQuantity(item.artwork._id, item.quantity - 1)
-                        }
-                        disabled={item.quantity <= 1}
-                      >
-                        <RemoveIcon />
-                      </IconButton>
-                      <Typography sx={{ mx: 2 }}>{item.quantity}</Typography>
-                      <IconButton
-                        size="small"
-                        onClick={() =>
-                          updateQuantity(item.artwork._id, item.quantity + 1)
-                        }
-                      >
-                        <AddIcon />
-                      </IconButton>
-                      <IconButton
-                        color="error"
-                        onClick={() => removeItem(item.artwork._id)}
-                        sx={{ ml: "auto" }}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </Box>
-                  </Grid>
-                </Grid>
-              </CardContent>
-            </Card>
-          ))}
-        </Grid>
-
-        {/* Order Summary */}
-        <Grid item xs={12} md={4}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Order Summary
-              </Typography>
-              <Box sx={{ my: 2 }}>
-                <Grid container justifyContent="space-between" sx={{ mb: 1 }}>
-                  <Typography>Subtotal</Typography>
-                  <Typography>${cart.totalAmount.toLocaleString()}</Typography>
-                </Grid>
-                <Grid container justifyContent="space-between" sx={{ mb: 1 }}>
-                  <Typography>Shipping</Typography>
-                  <Typography>Free</Typography>
-                </Grid>
-                <Divider sx={{ my: 2 }} />
-                <Grid container justifyContent="space-between">
-                  <Typography variant="h6">Total</Typography>
-                  <Typography variant="h6">
-                    ${cart.totalAmount.toLocaleString()}
+            <Box
+              key={item.artworkId}
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                p: 2,
+                border: "1px solid rgba(0, 0, 0, 0.12)",
+                borderRadius: 1,
+                bgcolor: "background.paper",
+              }}
+            >
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                <Box
+                  component="img"
+                  src={item.imageUrl}
+                  alt={item.title}
+                  sx={{
+                    width: 96,
+                    height: 96,
+                    objectFit: "cover",
+                    borderRadius: 1,
+                  }}
+                />
+                <Box>
+                  <Typography variant="h6">{item.title}</Typography>
+                  <Typography variant="body1" color="text.secondary">
+                    ${item.price}
                   </Typography>
-                </Grid>
+                </Box>
               </Box>
 
-              {checkoutStep === 1 ? (
-                <>
-                  <Typography variant="h6" gutterBottom sx={{ mt: 4 }}>
-                    Shipping Address
-                  </Typography>
-                  <Box sx={{ mt: 2 }}>
-                    <TextField
-                      fullWidth
-                      label="Street Address"
-                      value={shippingAddress.street}
-                      onChange={(e) =>
-                        handleAddressChange("street", e.target.value)
-                      }
-                      sx={{ mb: 2 }}
-                    />
-                    <Grid container spacing={2}>
-                      <Grid item xs={12} sm={6}>
-                        <TextField
-                          fullWidth
-                          label="City"
-                          value={shippingAddress.city}
-                          onChange={(e) =>
-                            handleAddressChange("city", e.target.value)
-                          }
-                        />
-                      </Grid>
-                      <Grid item xs={12} sm={6}>
-                        <TextField
-                          fullWidth
-                          label="State"
-                          value={shippingAddress.state}
-                          onChange={(e) =>
-                            handleAddressChange("state", e.target.value)
-                          }
-                        />
-                      </Grid>
-                      <Grid item xs={12} sm={6}>
-                        <TextField
-                          fullWidth
-                          label="ZIP Code"
-                          value={shippingAddress.zipCode}
-                          onChange={(e) =>
-                            handleAddressChange("zipCode", e.target.value)
-                          }
-                        />
-                      </Grid>
-                      <Grid item xs={12} sm={6}>
-                        <TextField
-                          fullWidth
-                          label="Country"
-                          value={shippingAddress.country}
-                          onChange={(e) =>
-                            handleAddressChange("country", e.target.value)
-                          }
-                        />
-                      </Grid>
-                    </Grid>
-                  </Box>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                   <Button
-                    variant="contained"
-                    color="primary"
-                    fullWidth
-                    sx={{ mt: 4 }}
-                    onClick={handleCheckout}
+                    variant="outlined"
+                    size="small"
+                    onClick={() =>
+                      updateQuantity(item.artworkId, item.quantity - 1)
+                    }
                   >
-                    Proceed to Payment
+                    -
                   </Button>
-                </>
-              ) : (
+                  <Typography>{item.quantity}</Typography>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() =>
+                      updateQuantity(item.artworkId, item.quantity + 1)
+                    }
+                  >
+                    +
+                  </Button>
+                </Box>
                 <Button
-                  variant="contained"
-                  color="primary"
-                  fullWidth
-                  sx={{ mt: 4 }}
-                  onClick={handlePayment}
+                  color="error"
+                  onClick={() => removeItem(item.artworkId)}
                 >
-                  Pay Now
+                  Remove
                 </Button>
-              )}
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+              </Box>
+            </Box>
+          ))}
+        </Box>
+
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mt: 4,
+          }}
+        >
+          <Typography variant="h5">Total: ${cart.total}</Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            size="large"
+            onClick={() => navigate("/checkout")}
+          >
+            Proceed to Checkout
+          </Button>
+        </Box>
+      </Box>
     </Container>
   );
 };

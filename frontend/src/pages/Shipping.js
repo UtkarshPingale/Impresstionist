@@ -18,7 +18,7 @@ const Shipping = () => {
             item (collectively hereinafter referred to as "Artworks" or
             "Artwork") will be done by Impressionist. Impressionist takes great
             care for packing all consignments. The term website user/customer
-            shall be hereinafter referred to as "you" or "your").
+            shall be hereinafter referred to as "you" or "your".
           </Typography>
 
           <Typography variant="h5" component="h2" gutterBottom sx={{ mt: 4 }}>
