@@ -106,6 +106,7 @@ router.post("/login", async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Please provide both email and password",
+        shouldRegister: false
       });
     }
 
@@ -114,10 +115,12 @@ router.post("/login", async (req, res) => {
       "+password"
     );
 
+    // Check if user exists
     if (!user) {
-      return res.status(401).json({
+      return res.status(404).json({
         success: false,
-        message: "Invalid email or password",
+        message: "User not found. Please register first.",
+        shouldRegister: true
       });
     }
 
@@ -126,7 +129,8 @@ router.post("/login", async (req, res) => {
     if (!isMatch) {
       return res.status(401).json({
         success: false,
-        message: "Invalid email or password",
+        message: "Incorrect password. Please try again.",
+        shouldRegister: false
       });
     }
 
@@ -135,6 +139,7 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({
         success: false,
         message: "Your account is not active. Please contact support.",
+        shouldRegister: false
       });
     }
 
@@ -163,6 +168,7 @@ router.post("/login", async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Login failed. Please try again.",
+      shouldRegister: false
     });
   }
 });

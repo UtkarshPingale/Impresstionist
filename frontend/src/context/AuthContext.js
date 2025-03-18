@@ -53,25 +53,36 @@ export const AuthProvider = ({ children }) => {
           email: "admin",
           role: "admin",
         };
-        const adminToken = "admin-token";
-        localStorage.setItem("token", adminToken);
+        localStorage.setItem("token", "admin-token");
         setUser(adminUser);
         setIsAuthenticated(true);
-        return { success: true };
+        return { success: true, user: adminUser };
       }
 
       // Regular user login
       const response = await axios.post("/api/auth/login", { email, password });
-      const { token, user } = response.data;
-      localStorage.setItem("token", token);
-      setUser(user);
-      setIsAuthenticated(true);
-      return { success: true };
+      if (response.data.success) {
+        const { token, user } = response.data;
+        localStorage.setItem("token", token);
+        setUser(user);
+        setIsAuthenticated(true);
+        return { success: true, user };
+      } else {
+        return {
+          success: false,
+          message: response.data.message || "Login failed",
+          shouldRegister: response.data.shouldRegister || false,
+        };
+      }
     } catch (error) {
       console.error("Login error:", error);
+      localStorage.removeItem("token");
+      setUser(null);
+      setIsAuthenticated(false);
       return {
         success: false,
         message: error.response?.data?.message || "Login failed",
+        shouldRegister: error.response?.data?.shouldRegister || false,
       };
     }
   };
