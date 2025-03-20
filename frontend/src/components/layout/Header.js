@@ -101,11 +101,10 @@ const Header = () => {
         bgcolor: "rgba(0, 0, 0, 0.4)",
         backdropFilter: "blur(10px)",
         WebkitBackdropFilter: "blur(10px)",
-        boxShadow:
-          "0 4px 20px rgba(0, 0, 0, 0.3), 0 6px 50px rgba(0, 0, 0, 0.1)",
-        borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
-        borderBottomLeftRadius: 10,
-        borderBottomRightRadius: 10,
+        // boxShadow:"0 4px 20px rgba(0, 0, 0, 0.3), 0 6px 50px rgba(0, 0, 0, 0.1)",
+        // borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
+        // borderBottomLeftRadius: 10,
+        // borderBottomRightRadius: 10,
         "&::after": {
           content: '""',
           position: "absolute",

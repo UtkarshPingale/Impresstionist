@@ -46,6 +46,15 @@ const Home = () => {
 
   return (
     <Box>
+      {/* Image Slider Section */}
+      <Box
+        sx={{bgcolor: "#f8f8f8", width: "100%", overflow: "hidden" }}
+      >
+        <Container maxWidth="lg">
+          <ImageSlider images={sliderImages} />
+        </Container>
+      </Box>
+
       {/* Hero Section */}
       <Box
         sx={{
@@ -105,39 +114,6 @@ const Home = () => {
             goes beyond realistic representation, using shapes, colors, and
             lines to evoke emotions and invite personal interpretation.
           </Typography>
-        </Container>
-      </Box>
-
-      {/* Image Slider Section */}
-      <Box
-        sx={{ py: 8, bgcolor: "#f8f8f8", width: "100%", overflow: "hidden" }}
-      >
-        <Container maxWidth="lg">
-        <Typography
-              variant="h2"
-              sx={{
-                fontFamily: '"Times New Roman", serif',
-                fontWeight: "bold",
-                mb: 3,
-                fontSize: { xs: "2.5rem", md: "3.5rem" },
-              }}
-            >
-              Featured Works
-            </Typography>
-            <Typography
-              variant="body1"
-              sx={{
-                color: "#666",
-                fontSize: "1.1rem",
-                lineHeight: 1.8,
-                maxWidth: "600px",
-              }}
-            > 
-              Explore a curated selection of the artist's most compelling pieces. Each work embodies a unique expression, 
-              blending creativity and emotion to inspire and captivate. Discover the essence of modern artistry through 
-              these exceptional creations.
-            </Typography>
-          <ImageSlider images={sliderImages} />
         </Container>
       </Box>
 
@@ -382,16 +358,16 @@ const Home = () => {
         sx={{ py: 8, bgcolor: "#f8f8f8", width: "100%", overflow: "hidden" }}
       >
         <Typography
-              variant="h2"
-              sx={{
-                fontFamily: '"Times New Roman", serif',
-                fontWeight: "bold",
-                mb: 3,
-                fontSize: { xs: "2.5rem", md: "3.5rem" },
-              }}
-            >
-              Try AR Preview
-            </Typography>
+          variant="h2"
+          sx={{
+            fontFamily: '"Times New Roman", serif',
+            fontWeight: "bold",
+            mb: 3,
+            fontSize: { xs: "2.5rem", md: "3.5rem" },
+          }}
+        >
+          Try AR Preview
+        </Typography>
         <Box
           sx={{
             height: "400px",

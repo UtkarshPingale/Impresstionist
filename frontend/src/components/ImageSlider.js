@@ -13,165 +13,166 @@ const ImageSlider = ({ images }) => {
   };
 
   const handlePrev = () => {
-    if (isTransitioning) return;
-    setIsTransitioning(true);
-    setCurrentIndex((prevIndex) => getImageIndex(prevIndex - 1));
+    if (!isTransitioning) {
+      setIsTransitioning(true);
+      setCurrentIndex((prevIndex) => getImageIndex(prevIndex - 1));
+    }
   };
 
   const handleNext = () => {
-    if (isTransitioning) return;
-    setIsTransitioning(true);
-    setCurrentIndex((prevIndex) => getImageIndex(prevIndex + 1));
+    if (!isTransitioning) {
+      setIsTransitioning(true);
+      setCurrentIndex((prevIndex) => getImageIndex(prevIndex + 1));
+    }
   };
 
-  const handleTransitionEnd = () => {
-    setIsTransitioning(false);
-  };
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!isTransitioning) {
+        handleNext();
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [isTransitioning]);
 
   return (
     <Box
       sx={{
         position: "relative",
-        width: "100%",
-        maxWidth: "100%",
-        margin: 0,
-        height: "auto",
-        minHeight: "600px",
-        bgcolor: "#f8f8f8",
-        overflow: "hidden",
+        width: "100vw",
+        marginLeft: "calc(-50vw + 50%)",
+        marginRight: "calc(-50vw + 50%)",
+        height: "calc(100vh - 64px)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        py: 4,
-        perspective: "1500px",
+        bgcolor: "#fff",
+        overflow: "hidden",
       }}
     >
       <Box
         sx={{
+          position: "relative",
+          width: "100%",
+          height: "100%",
           display: "flex",
           alignItems: "center",
-          width: "100%",
-          position: "relative",
-          height: "auto",
-          transformStyle: "preserve-3d",
+          justifyContent: "center",
         }}
       >
-        {/* Previous Image */}
+        {images.map((image, index) => (
+          <Box
+            key={index}
+            sx={{
+              position: "absolute",
+              width: "100%",
+              height: "100%",
+              opacity: currentIndex === index ? 1 : 0,
+              transition: "opacity 0.5s ease-in-out",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            onTransitionEnd={() => {
+              if (currentIndex === index) {
+                setIsTransitioning(false);
+              }
+            }}
+          >
+            <img
+              src={image}
+              alt={`Slide ${index + 1}`}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                display: "block",
+                border: "2px solid rgba(0, 0, 0, 0.3)",
+                boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+              }}
+            />
+          </Box>
+        ))}
+
         <Box
           sx={{
             position: "absolute",
-            left: "2%",
-            width: "25%",
-            height: "auto",
-            opacity: isTransitioning ? 0.3 : 0.5,
-            filter: "blur(2px)",
-            transition: "all 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
-            transform: isTransitioning
-              ? "translateX(-10%) translateZ(-150px) rotateY(55deg)"
-              : "translateX(0) translateZ(-100px) rotateY(45deg)",
-            transformOrigin: "left center",
-          }}
-        >
-          <img
-            src={images[getImageIndex(currentIndex - 1)]}
-            alt="Previous"
-            style={{
-              width: "100%",
-              height: "auto",
-              objectFit: "contain",
-              transition: "transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
-            }}
-          />
-        </Box>
-
-        {/* Current Image */}
-        <Box
-          sx={{
-            width: "50%",
-            height: "auto",
-            margin: "0 auto",
-            transition: "all 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
-            transform: isTransitioning
-              ? "scale(0.95) translateY(2%) translateZ(50px)"
-              : "scale(1.1) translateY(0) translateZ(150px)",
-            transformOrigin: "center center",
+            left: 0,
+            top: 0,
+            width: "15%",
+            height: "100%",
+            background:
+              "linear-gradient(to right, rgba(255,255,255,0.5), transparent)",
+            opacity: 0,
+            transition: "opacity 0.3s",
+            "&:hover": {
+              opacity: 1,
+            },
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-start",
+            pl: 2,
             zIndex: 2,
           }}
-          onTransitionEnd={handleTransitionEnd}
         >
-          <img
-            src={images[currentIndex]}
-            alt="Current"
-            style={{
-              width: "100%",
-              height: "auto",
-              objectFit: "contain",
-              boxShadow: "0 8px 30px rgba(0,0,0,0.2)",
-              transition: "transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
+          <IconButton
+            onClick={handlePrev}
+            sx={{
+              width: 40,
+              height: 40,
+              bgcolor: "transparent",
+              border: "none",
+              color: "rgba(0, 0, 0, 0.7)",
+              "&:hover": {
+                bgcolor: "transparent",
+              },
+              cursor: isTransitioning ? "default" : "pointer",
             }}
-          />
+          >
+            <ArrowBack sx={{ fontSize: "2rem" }} />
+          </IconButton>
         </Box>
 
-        {/* Next Image */}
         <Box
           sx={{
             position: "absolute",
-            right: "2%",
-            width: "25%",
-            height: "auto",
-            opacity: isTransitioning ? 0.3 : 0.5,
-            filter: "blur(2px)",
-            transition: "all 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
-            transform: isTransitioning
-              ? "translateX(10%) translateZ(-150px) rotateY(-55deg)"
-              : "translateX(0) translateZ(-100px) rotateY(-45deg)",
-            transformOrigin: "right center",
+            right: 0,
+            top: 0,
+            width: "15%",
+            height: "100%",
+            background:
+              "linear-gradient(to left, rgba(255,255,255,0.5), transparent)",
+            opacity: 0,
+            transition: "opacity 0.3s",
+            "&:hover": {
+              opacity: 1,
+            },
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-end",
+            pr: 2,
+            zIndex: 2,
           }}
         >
-          <img
-            src={images[getImageIndex(currentIndex + 1)]}
-            alt="Next"
-            style={{
-              width: "100%",
-              height: "auto",
-              objectFit: "contain",
-              transition: "transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
+          <IconButton
+            onClick={handleNext}
+            sx={{
+              width: 40,
+              height: 40,
+              bgcolor: "transparent",
+              border: "none",
+              color: "rgba(0, 0, 0, 0.7)",
+              "&:hover": {
+                bgcolor: "transparent",
+              },
+              cursor: isTransitioning ? "default" : "pointer",
             }}
-          />
+          >
+            <ArrowForward sx={{ fontSize: "2rem" }} />
+          </IconButton>
         </Box>
       </Box>
-
-      <IconButton
-        onClick={handlePrev}
-        sx={{
-          position: "absolute",
-          left: "5%",
-          zIndex: 3,
-          bgcolor: "rgba(255, 255, 255, 0.8)",
-          "&:hover": {
-            bgcolor: "rgba(255, 255, 255, 0.9)",
-          },
-          transition: "all 0.3s ease",
-        }}
-      >
-        <ArrowBack />
-      </IconButton>
-
-      <IconButton
-        onClick={handleNext}
-        sx={{
-          position: "absolute",
-          right: "5%",
-          zIndex: 3,
-          bgcolor: "rgba(255, 255, 255, 0.8)",
-          "&:hover": {
-            bgcolor: "rgba(255, 255, 255, 0.9)",
-          },
-          transition: "all 0.3s ease",
-        }}
-      >
-        <ArrowForward />
-      </IconButton>
     </Box>
   );
 };
