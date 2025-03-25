@@ -48,7 +48,10 @@ const Home = () => {
     <Box>
       {/* Image Slider Section */}
       <Box
-        sx={{bgcolor: "#f8f8f8", width: "100%", overflow: "hidden" }}
+        sx={{bgcolor: "#f8f8f8", 
+          width: "100%", 
+          overflow: "hidden",
+          border: "10px solid #bfbfbf", }}
       >
         <Container maxWidth="lg">
           <ImageSlider images={sliderImages} />
