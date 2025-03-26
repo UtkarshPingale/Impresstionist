@@ -205,7 +205,9 @@ const Gallery = () => {
         </Grid>
 
         <Box sx={{ mt: 2 }}>
-          <Typography gutterBottom>Price Range</Typography>
+          <Typography gutterBottom>
+            Price Range: ₹{filters.minPrice.toLocaleString()} - ₹{filters.maxPrice.toLocaleString()}
+          </Typography>
           <Slider
             value={[filters.minPrice, filters.maxPrice]}
             onChange={(_, newValue) => {
@@ -213,10 +215,16 @@ const Gallery = () => {
               handleFilterChange("maxPrice", newValue[1]);
             }}
             valueLabelDisplay="auto"
-            min={0}
-            max={10000}
-            step={100}
-            marks
+            valueLabelFormat={(value) => `₹${value.toLocaleString()}`}
+            min={10000}
+            max={300000}
+            step={5000}
+            marks={[
+              { value: 10000, label: '₹10K' },
+              { value: 100000, label: '₹1L' },
+              { value: 200000, label: '₹2L' },
+              { value: 300000, label: '₹3L' }
+            ]}
           />
         </Box>
       </Box>
@@ -250,7 +258,7 @@ const Gallery = () => {
                   {artwork.description.substring(0, 100)}...
                 </Typography>
                 <Typography variant="h6" color="primary" gutterBottom>
-                  ${artwork.price.toLocaleString()}
+                  ₹{artwork.price.toLocaleString()}
                 </Typography>
                 <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
                   <Chip label={artwork.style} size="small" />
