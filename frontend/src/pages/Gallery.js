@@ -206,7 +206,8 @@ const Gallery = () => {
 
         <Box sx={{ mt: 2 }}>
           <Typography gutterBottom>
-            Price Range: ₹{filters.minPrice.toLocaleString()} - ₹{filters.maxPrice.toLocaleString()}
+            Price Range: ₹{filters.minPrice.toLocaleString()} - ₹
+            {filters.maxPrice.toLocaleString()}
           </Typography>
           <Slider
             value={[filters.minPrice, filters.maxPrice]}
@@ -220,10 +221,10 @@ const Gallery = () => {
             max={300000}
             step={5000}
             marks={[
-              { value: 10000, label: '₹10K' },
-              { value: 100000, label: '₹1L' },
-              { value: 200000, label: '₹2L' },
-              { value: 300000, label: '₹3L' }
+              { value: 10000, label: "₹10K" },
+              { value: 100000, label: "₹1L" },
+              { value: 200000, label: "₹2L" },
+              { value: 300000, label: "₹3L" },
             ]}
           />
         </Box>
