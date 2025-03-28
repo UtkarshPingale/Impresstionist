@@ -50,8 +50,7 @@ const Home = () => {
       <Box
         sx={{bgcolor: "#f8f8f8", 
           width: "100%", 
-          overflow: "hidden",
-          border: "10px solid #bfbfbf", }}
+          overflow: "hidden" }}
       >
         <Container maxWidth="lg">
           <ImageSlider images={sliderImages} />

@@ -20,11 +20,11 @@ import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
+  Image as ImageIcon,
 } from "@mui/icons-material";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import axios from "axios";
-import ImageUpload from "../../components/common/ImageUpload";
 
 const AdminExhibitions = () => {
   const [exhibitions, setExhibitions] = useState([]);
@@ -36,23 +36,29 @@ const AdminExhibitions = () => {
     description: "",
     startDate: null,
     endDate: null,
+    exhibitionType: "offline",
     location: "",
     address: "",
     city: "",
     state: "",
     country: "",
-    admissionType: "free",
-    admissionPrice: "",
     image: null,
     status: "upcoming",
   });
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [openGalleryDialog, setOpenGalleryDialog] = useState(false);
+  const [galleryImages, setGalleryImages] = useState([]);
 
-  const admissionTypes = ["free", "paid", "donation"];
   const statusOptions = ["upcoming", "current", "past"];
+  const exhibitionTypes = ["online", "offline"];
 
   useEffect(() => {
     fetchExhibitions();
+    fetchGalleryImages();
+
+    // Check status updates every hour
+    const statusInterval = setInterval(updateExhibitionStatuses, 3600000);
+    return () => clearInterval(statusInterval);
   }, []);
 
   const fetchExhibitions = async () => {
@@ -66,6 +72,53 @@ const AdminExhibitions = () => {
     }
   };
 
+  const fetchGalleryImages = async () => {
+    try {
+      const response = await axios.get("/api/gallery");
+      setGalleryImages(response.data);
+    } catch (error) {
+      console.error("Error fetching gallery images:", error);
+    }
+  };
+
+  const updateExhibitionStatuses = async () => {
+    const now = new Date();
+    const updatedExhibitions = exhibitions.map((exhibition) => {
+      const startDate = new Date(exhibition.startDate);
+      const endDate = new Date(exhibition.endDate);
+      let newStatus = exhibition.status;
+
+      if (now > endDate) {
+        newStatus = "past";
+      } else if (now >= startDate && now <= endDate) {
+        newStatus = "current";
+      } else if (now < startDate) {
+        newStatus = "upcoming";
+      }
+
+      return { ...exhibition, status: newStatus };
+    });
+
+    // Update any exhibitions whose status has changed
+    const changes = updatedExhibitions.filter(
+      (exhibition, index) => exhibition.status !== exhibitions[index].status
+    );
+
+    for (const exhibition of changes) {
+      try {
+        await axios.put(`/api/exhibitions/${exhibition._id}`, {
+          status: exhibition.status,
+        });
+      } catch (error) {
+        console.error("Error updating exhibition status:", error);
+      }
+    }
+
+    if (changes.length > 0) {
+      fetchExhibitions();
+    }
+  };
+
   const handleOpenDialog = (exhibition = null) => {
     if (exhibition) {
       setSelectedExhibition(exhibition);
@@ -74,13 +127,12 @@ const AdminExhibitions = () => {
         description: exhibition.description,
         startDate: new Date(exhibition.startDate),
         endDate: new Date(exhibition.endDate),
+        exhibitionType: exhibition.exhibitionType || "offline",
         location: exhibition.location,
         address: exhibition.address,
         city: exhibition.city,
         state: exhibition.state,
         country: exhibition.country,
-        admissionType: exhibition.admissionType,
-        admissionPrice: exhibition.admissionPrice,
         image: exhibition.image,
         status: exhibition.status,
       });
@@ -91,13 +143,12 @@ const AdminExhibitions = () => {
         description: "",
         startDate: null,
         endDate: null,
+        exhibitionType: "offline",
         location: "",
         address: "",
         city: "",
         state: "",
         country: "",
-        admissionType: "free",
-        admissionPrice: "",
         image: null,
         status: "upcoming",
       });
@@ -125,16 +176,17 @@ const AdminExhibitions = () => {
     }));
   };
 
-  const handleFileSelect = (file) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setPreviewUrl(reader.result);
-      setFormData((prev) => ({
-        ...prev,
-        image: reader.result,
-      }));
-    };
-    reader.readAsDataURL(file);
+  const handleSelectImage = (image) => {
+    setFormData((prev) => ({
+      ...prev,
+      image: image.url,
+    }));
+    setPreviewUrl(image.url);
+    setOpenGalleryDialog(false);
+  };
+
+  const handleOpenGalleryDialog = () => {
+    setOpenGalleryDialog(true);
   };
 
   const handleSubmit = async (e) => {
@@ -212,29 +264,25 @@ const AdminExhibitions = () => {
                 <Typography variant="h6" gutterBottom>
                   {exhibition.title}
                 </Typography>
-                <Typography color="textSecondary" gutterBottom>
-                  {exhibition.location}
-                </Typography>
+                {exhibition.exhibitionType === "offline" && (
+                  <Typography color="textSecondary" gutterBottom>
+                    {exhibition.location}
+                  </Typography>
+                )}
                 <Typography variant="body2" color="textSecondary">
                   {new Date(exhibition.startDate).toLocaleDateString()} -{" "}
                   {new Date(exhibition.endDate).toLocaleDateString()}
                 </Typography>
                 <Box sx={{ mt: 1 }}>
                   <Chip
-                    label={
-                      exhibition.status.charAt(0).toUpperCase() +
-                      exhibition.status.slice(1)
-                    }
-                    color={getStatusColor(exhibition.status)}
+                    label={exhibition.exhibitionType}
+                    color="secondary"
                     size="small"
                     sx={{ mr: 1 }}
                   />
                   <Chip
-                    label={
-                      exhibition.admissionType.charAt(0).toUpperCase() +
-                      exhibition.admissionType.slice(1)
-                    }
-                    variant="outlined"
+                    label={exhibition.status}
+                    color={getStatusColor(exhibition.status)}
                     size="small"
                   />
                 </Box>
@@ -286,6 +334,23 @@ const AdminExhibitions = () => {
               />
             </Grid>
             <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                select
+                label="Exhibition Type"
+                name="exhibitionType"
+                value={formData.exhibitionType}
+                onChange={handleInputChange}
+                required
+              >
+                {exhibitionTypes.map((option) => (
+                  <MenuItem key={option} value={option}>
+                    {option.charAt(0).toUpperCase() + option.slice(1)}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+            <Grid item xs={12} sm={6}>
               <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <DatePicker
                   label="Start Date"
@@ -309,85 +374,60 @@ const AdminExhibitions = () => {
                 />
               </LocalizationProvider>
             </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Location"
-                name="location"
-                value={formData.location}
-                onChange={handleInputChange}
-                required
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Address"
-                name="address"
-                value={formData.address}
-                onChange={handleInputChange}
-                required
-              />
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <TextField
-                fullWidth
-                label="City"
-                name="city"
-                value={formData.city}
-                onChange={handleInputChange}
-                required
-              />
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <TextField
-                fullWidth
-                label="State"
-                name="state"
-                value={formData.state}
-                onChange={handleInputChange}
-                required
-              />
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <TextField
-                fullWidth
-                label="Country"
-                name="country"
-                value={formData.country}
-                onChange={handleInputChange}
-                required
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                select
-                label="Admission Type"
-                name="admissionType"
-                value={formData.admissionType}
-                onChange={handleInputChange}
-                required
-              >
-                {admissionTypes.map((option) => (
-                  <MenuItem key={option} value={option}>
-                    {option.charAt(0).toUpperCase() + option.slice(1)}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Admission Price"
-                name="admissionPrice"
-                type="number"
-                value={formData.admissionPrice}
-                onChange={handleInputChange}
-                disabled={formData.admissionType === "free"}
-                required={formData.admissionType !== "free"}
-              />
-            </Grid>
+            {formData.exhibitionType === "offline" && (
+              <>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Location"
+                    name="location"
+                    value={formData.location}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Address"
+                    name="address"
+                    value={formData.address}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    fullWidth
+                    label="City"
+                    name="city"
+                    value={formData.city}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    fullWidth
+                    label="State"
+                    name="state"
+                    value={formData.state}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    fullWidth
+                    label="Country"
+                    name="country"
+                    value={formData.country}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </Grid>
+              </>
+            )}
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -406,11 +446,24 @@ const AdminExhibitions = () => {
               </TextField>
             </Grid>
             <Grid item xs={12}>
-              <ImageUpload
-                onFileSelect={handleFileSelect}
-                previewUrl={previewUrl}
-                label="Upload Exhibition Image"
-              />
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                <Button
+                  variant="outlined"
+                  startIcon={<ImageIcon />}
+                  onClick={handleOpenGalleryDialog}
+                  fullWidth
+                >
+                  Select Image from Gallery
+                </Button>
+                {previewUrl && (
+                  <Box
+                    component="img"
+                    src={previewUrl}
+                    alt="Preview"
+                    sx={{ width: "100%", height: 200, objectFit: "cover" }}
+                  />
+                )}
+              </Box>
             </Grid>
           </Grid>
         </DialogContent>
@@ -419,6 +472,44 @@ const AdminExhibitions = () => {
           <Button onClick={handleSubmit} variant="contained" color="primary">
             {selectedExhibition ? "Update" : "Create"}
           </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={openGalleryDialog}
+        onClose={() => setOpenGalleryDialog(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>Select Image from Gallery</DialogTitle>
+        <DialogContent>
+          <Grid container spacing={2} sx={{ mt: 1 }}>
+            {galleryImages.map((image) => (
+              <Grid item xs={4} key={image._id}>
+                <Card
+                  sx={{
+                    cursor: "pointer",
+                    "&:hover": { opacity: 0.8 },
+                  }}
+                  onClick={() => handleSelectImage(image)}
+                >
+                  <Box
+                    component="img"
+                    src={image.url}
+                    alt={image.title}
+                    sx={{
+                      width: "100%",
+                      height: 150,
+                      objectFit: "cover",
+                    }}
+                  />
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenGalleryDialog(false)}>Cancel</Button>
         </DialogActions>
       </Dialog>
     </Box>
