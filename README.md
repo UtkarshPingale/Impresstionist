@@ -68,6 +68,30 @@ A modern web platform for artists to showcase and sell their artwork with advanc
    npm start
    ```
 
+### Running the Application
+
+#### Running the Backend
+
+1. Navigate to the `backend` directory:
+   ```bash
+   cd backend
+   ```
+2. Start the backend server:
+   ```bash
+   npm run dev OR node server.js OR npm start
+   ```
+
+#### Running the Frontend
+
+1. Navigate to the `frontend` directory:
+   ```bash
+   cd frontend
+   ```
+2. Start the frontend server:
+   ```bash
+   npm start
+   ```
+
 ## Project Structure
 
 ```
@@ -85,7 +109,5 @@ Please read CONTRIBUTING.md for details on our code of conduct and the process f
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
-
-
 
 ✅ Mongodb + Cloudinary
