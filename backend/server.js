@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
+const path = require("path");
 
 // Load environment variables
 dotenv.config();
@@ -31,6 +32,9 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Serve static files from uploads directory
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 // Debug middleware
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.path}`);
@@ -43,6 +47,7 @@ app.use("/api/artworks", require("./routes/artworks"));
 app.use("/api/exhibitions", require("./routes/exhibitions"));
 app.use("/api/cart", require("./routes/cart"));
 app.use("/api/orders", require("./routes/orders"));
+app.use("/api/videos", require("./routes/videos"));
 
 // Error handling middleware
 app.use((err, req, res, next) => {

@@ -51,9 +51,6 @@ const ArtworkSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  arModelUrl: {
-    type: String,
-  },
   isFeatured: {
     type: Boolean,
     default: false,

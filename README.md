@@ -1,6 +1,6 @@
 # Impress - Artist Portfolio & Artwork Marketplace
 
-A modern web platform for artists to showcase and sell their artwork with advanced features including AR visualization.
+A modern web platform for artists to showcase and sell their artwork.
 
 ## Features
 
@@ -15,18 +15,16 @@ A modern web platform for artists to showcase and sell their artwork with advanc
 - Contact form
 - Admin dashboard
 - Shopping cart system
-- AR visualization for artwork placement
 - Social media integration
 - User authentication
 
 ## Tech Stack
 
-- Frontend: React.js, Three.js (for AR), TailwindCSS
+- Frontend: React.js, TailwindCSS
 - Backend: Node.js, Express.js
 - Database: MongoDB
 - Authentication: JWT
 - Payment Integration: Stripe
-- AR: AR.js, Three.js
 
 ## Getting Started
 

@@ -48,12 +48,10 @@ const AdminArtworks = () => {
     dimensions: "",
     medium: "",
     image: null,
-    arModel: null,
     featured: false,
     available: true,
   });
   const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
-  const [arModelName, setArModelName] = useState("");
 
   const categories = [
     "Painting",
@@ -102,7 +100,6 @@ const AdminArtworks = () => {
         dimensions: artwork.dimensions,
         medium: artwork.medium,
         image: artwork.image,
-        arModel: artwork.arModel,
         featured: artwork.featured,
         available: artwork.available,
       });
@@ -118,7 +115,6 @@ const AdminArtworks = () => {
         dimensions: "",
         medium: "",
         image: null,
-        arModel: null,
         featured: false,
         available: true,
       });
@@ -149,16 +145,6 @@ const AdminArtworks = () => {
       }));
     };
     reader.readAsDataURL(file);
-  };
-
-  const handleArModelSelect = (file) => {
-    if (file) {
-      setArModelName(file.name);
-      setFormData((prev) => ({
-        ...prev,
-        arModel: file,
-      }));
-    }
   };
 
   const handleSubmit = async (e) => {
@@ -371,17 +357,6 @@ const AdminArtworks = () => {
                 onFileSelect={handleImageSelect}
                 previewUrl={imagePreviewUrl}
                 label="Upload Artwork Image"
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <ImageUpload
-                onFileSelect={handleArModelSelect}
-                previewUrl={null}
-                label="Upload AR Model"
-                acceptedFiles=".glb,.gltf"
-                helperText="Supported formats: GLB, GLTF"
-                showPreview={false}
-                customText={arModelName || "No file selected"}
               />
             </Grid>
           </Grid>

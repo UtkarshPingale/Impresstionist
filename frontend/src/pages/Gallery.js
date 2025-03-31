@@ -19,8 +19,6 @@ import {
   useTheme,
   useMediaQuery,
 } from "@mui/material";
-import { Canvas } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
 import axios from "axios";
 
 const Gallery = () => {
@@ -35,8 +33,6 @@ const Gallery = () => {
     maxPrice: 10000,
     year: "",
   });
-  const [selectedArtwork, setSelectedArtwork] = useState(null);
-  const [showARPreview, setShowARPreview] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
@@ -104,11 +100,6 @@ const Gallery = () => {
 
   const handleFilterChange = (field, value) => {
     setFilters((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleARPreview = (artwork) => {
-    setSelectedArtwork(artwork);
-    setShowARPreview(true);
   };
 
   const styles = [
@@ -275,66 +266,12 @@ const Gallery = () => {
                   >
                     View Details
                   </Button>
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    onClick={() => handleARPreview(artwork)}
-                  >
-                    AR Preview
-                  </Button>
                 </Box>
               </CardContent>
             </Card>
           </Grid>
         ))}
       </Grid>
-
-      {/* AR Preview Modal */}
-      {showARPreview && selectedArtwork && (
-        <Box
-          sx={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            bgcolor: "rgba(0, 0, 0, 0.8)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1000,
-          }}
-        >
-          <Box
-            sx={{
-              width: "90%",
-              height: "90%",
-              bgcolor: "white",
-              borderRadius: 2,
-              overflow: "hidden",
-              position: "relative",
-            }}
-          >
-            <Button
-              onClick={() => setShowARPreview(false)}
-              sx={{
-                position: "absolute",
-                top: 16,
-                right: 16,
-                zIndex: 1,
-              }}
-            >
-              Close
-            </Button>
-            <Canvas>
-              <ambientLight intensity={0.5} />
-              <pointLight position={[10, 10, 10]} />
-              <OrbitControls />
-              {/* Add 3D model here */}
-            </Canvas>
-          </Box>
-        </Box>
-      )}
     </Container>
   );
 };

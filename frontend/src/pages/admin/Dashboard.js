@@ -31,6 +31,7 @@ import {
   Article as PressIcon,
   Star as TestimonialsIcon,
   Settings as SettingsIcon,
+  VideoLibrary as VideosIcon,
 } from "@mui/icons-material";
 import AdminArtworks from "./Artworks";
 import AdminExhibitions from "./Exhibitions";
@@ -39,6 +40,7 @@ import AdminPress from "./Press";
 import AdminTestimonials from "./Testimonials";
 import AdminPatron from "./Patron";
 import AdminSettings from "./Settings";
+import AdminVideos from "./Videos";
 
 const Dashboard = () => {
   const theme = useTheme();
@@ -62,6 +64,7 @@ const Dashboard = () => {
       path: "/admin/testimonials",
     },
     { text: "Settings", icon: <SettingsIcon />, path: "/admin/settings" },
+    { text: "Home Videos", icon: <VideosIcon />, path: "/admin/videos" },
   ];
 
   const DashboardHome = () => (
@@ -79,9 +82,9 @@ const Dashboard = () => {
               <Typography variant="h4">0</Typography>
             </CardContent>
             <CardActions>
-              {/* <Button size="small" component={RouterLink} to="/admin/artworks">
+              <Button size="small" component={RouterLink} to="/admin/artworks">
                 Manage Artworks
-              </Button> */}
+              </Button>
             </CardActions>
           </Card>
         </Grid>
@@ -94,13 +97,13 @@ const Dashboard = () => {
               <Typography variant="h4">0</Typography>
             </CardContent>
             <CardActions>
-              {/* <Button
+              <Button
                 size="small"
                 component={RouterLink}
                 to="/admin/exhibitions"
               >
                 Manage Exhibitions
-              </Button> */}
+              </Button>
             </CardActions>
           </Card>
         </Grid>
@@ -122,6 +125,21 @@ const Dashboard = () => {
               </Typography>
               <Typography variant="h4">0</Typography>
             </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={6}>
+          <Card>
+            <CardContent>
+              <Typography color="textSecondary" gutterBottom>
+                Home Videos
+              </Typography>
+              <Typography variant="h4">0</Typography>
+            </CardContent>
+            <CardActions>
+              <Button size="small" component={RouterLink} to="/admin/videos">
+                Manage Home Videos
+              </Button>
+            </CardActions>
           </Card>
         </Grid>
       </Grid>
@@ -174,6 +192,7 @@ const Dashboard = () => {
             <Route path="/press/*" element={<AdminPress />} />
             <Route path="/testimonials/*" element={<AdminTestimonials />} />
             <Route path="/settings/*" element={<AdminSettings />} />
+            <Route path="/videos/*" element={<AdminVideos />} />
           </Routes>
         </Grid>
       </Grid>

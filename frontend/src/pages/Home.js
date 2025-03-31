@@ -11,11 +11,13 @@ import {
 } from "@mui/material";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
-import axios from "axios";
+import axios from "../config/axios";
 import ImageSlider from "../components/ImageSlider";
 
 const Home = () => {
   const [currentExhibition, setCurrentExhibition] = useState(null);
+  const [videos, setVideos] = useState([]);
+  const [popupVideo, setPopupVideo] = useState(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
@@ -35,23 +37,35 @@ const Home = () => {
     const fetchData = async () => {
       try {
         const exhibitionRes = await axios.get("/api/exhibitions/current");
-        setCurrentExhibition(exhibitionRes.data[0]);
+        if (exhibitionRes.data && exhibitionRes.data.length > 0) {
+          setCurrentExhibition(exhibitionRes.data[0]);
+        }
+        
+        // Fetch videos
+        const videosRes = await axios.get("/api/videos");
+        if (videosRes.data) {
+          // Ensure we're loading the latest data
+          console.log("Loaded videos:", videosRes.data);
+          setVideos(videosRes.data);
+        }
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
 
     fetchData();
+    
+    // This will ensure videos get refreshed when we return to home page
+    return () => {
+      // Clean up function runs when component unmounts
+      console.log("Home component unmounting - will refresh on next visit");
+    };
   }, []);
 
   return (
     <Box>
       {/* Image Slider Section */}
-      <Box
-        sx={{bgcolor: "#f8f8f8", 
-          width: "100%", 
-          overflow: "hidden" }}
-      >
+      <Box sx={{ bgcolor: "#f8f8f8", width: "100%", overflow: "hidden" }}>
         <Container maxWidth="lg">
           <ImageSlider images={sliderImages} />
         </Container>
@@ -354,53 +368,144 @@ const Home = () => {
         </Container>
       </Box>
 
-      {/* AR Preview Section */}
-      <Container
-        maxWidth="lg"
-        sx={{ py: 8, bgcolor: "#f8f8f8", width: "100%", overflow: "hidden" }}
-      >
-        <Typography
-          variant="h2"
-          sx={{
-            fontFamily: '"Times New Roman", serif',
-            fontWeight: "bold",
-            mb: 3,
-            fontSize: { xs: "2.5rem", md: "3.5rem" },
-          }}
-        >
-          Try AR Preview
-        </Typography>
-        <Box
-          sx={{
-            height: "400px",
-            bgcolor: "grey.200",
-            borderRadius: 2,
-            overflow: "hidden",
-          }}
-        >
-          <Canvas>
-            <ambientLight intensity={0.5} />
-            <pointLight position={[10, 10, 10]} />
-            <OrbitControls />
-            {/* Add 3D model here */}
-          </Canvas>
-        </Box>
-        <Box sx={{ textAlign: "center", mt: 4 }}>
-          <Typography variant="body1" paragraph>
-            Experience how the artwork would look in your space using our AR
-            preview feature
-          </Typography>
-          <Button
-            component={RouterLink}
-            to="/gallery"
-            variant="contained"
-            color="primary"
-            size="large"
+      {/* Video Section */}
+      <Box sx={{ py: 8, bgcolor: "#f8f8f8", width: "100%", overflow: "hidden" }}>
+        <Container maxWidth="lg">
+          <Typography
+            variant="h2"
+            sx={{
+              fontFamily: '"Times New Roman", serif',
+              fontWeight: "bold",
+              mb: 3,
+              fontSize: { xs: "2.5rem", md: "3.5rem" },
+              textAlign: "center",
+            }}
           >
-            Try AR Preview
-          </Button>
-        </Box>
-      </Container>
+            Explore the Artist's Vision
+          </Typography>
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", md: "repeat(3, 1fr)" },
+              gap: 3,
+              mt: 4,
+            }}
+          >
+            {videos.length > 0 ? (
+              videos.map((video) => (
+                <Box
+                  key={video._id}
+                  sx={{
+                    height: "200px",
+                    bgcolor: "grey.200",
+                    borderRadius: 2,
+                    overflow: "hidden",
+                    position: "relative",
+                    cursor: "pointer",
+                    boxShadow: "0px 4px 12px rgba(0,0,0,0.1)",
+                    transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                    "&:hover": {
+                      transform: "translateY(-5px)",
+                      boxShadow: "0px 8px 20px rgba(0,0,0,0.15)",
+                    },
+                  }}
+                  onClick={() => setPopupVideo(video.url)}
+                >
+                  <img
+                    src={video.thumbnail || "/thumbnails/default-video.jpg"}
+                    alt={video.title}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
+                  />
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      p: 1.5,
+                      bgcolor: "rgba(0, 0, 0, 0.7)",
+                      color: "white",
+                    }}
+                  >
+                    <Typography variant="subtitle1">{video.title}</Typography>
+                  </Box>
+                </Box>
+              ))
+            ) : (
+              <Typography variant="body1" sx={{ gridColumn: "1 / -1", textAlign: "center" }}>
+                No videos available at the moment.
+              </Typography>
+            )}
+          </Box>
+
+          {/* Popup Video */}
+          {popupVideo && (
+            <Box
+              sx={{
+                position: "fixed",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: "100%",
+                bgcolor: "rgba(0, 0, 0, 0.8)",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+                zIndex: 1000,
+              }}
+              onClick={() => setPopupVideo(null)}
+            >
+              <Box 
+                sx={{ 
+                  width: "80%", 
+                  height: "80%",
+                  position: "relative",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center"
+                }}
+              >
+                <iframe
+                  width="100%"
+                  height="100%"
+                  src={popupVideo}
+                  title="Video Player"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                ></iframe>
+                <Button 
+                  variant="contained" 
+                  color="primary"
+                  sx={{ 
+                    position: "absolute", 
+                    top: "-40px", 
+                    right: "0",
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setPopupVideo(null);
+                  }}
+                >
+                  Close
+                </Button>
+              </Box>
+            </Box>
+          )}
+
+          <Box sx={{ textAlign: "center", mt: 4 }}>
+            <Typography variant="body1" paragraph>
+              Discover the inspiration and process behind the artist's creations
+              through these exclusive videos.
+            </Typography>
+          </Box>
+        </Container>
+      </Box>
     </Box>
   );
 };

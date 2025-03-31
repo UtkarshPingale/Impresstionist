@@ -27,6 +27,8 @@ import Shipping from "./pages/Shipping";
 import AuthenticityGuarantee from "./pages/AuthenticityGuarantee";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { Canvas } from "@react-three/fiber";
+import { OrbitControls } from "@react-three/drei";
 
 const theme = createTheme({
   palette: {

@@ -1,0 +1,9 @@
+[
+  {
+    "_id": "test-video-1",
+    "url": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    "title": "Sample Art Video",
+    "thumbnail": "/uploads/homevideo/sample-thumbnail.jpg",
+    "createdAt": "2025-03-31T07:30:00.000Z"
+  }
+]
